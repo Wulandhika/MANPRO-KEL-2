@@ -1,0 +1,519 @@
+
+/* =====================================
+   FINDIT LOGIN & REGISTER
+   React JS + Vite
+===================================== */
+
+/* NAVBAR PUTIH UNTUK LOGIN */
+.auth-site-header {
+  background: #f7f9fb;
+  border-bottom: 1px solid #e9edf3;
+  box-shadow: 0 1px 8px rgba(22,35,59,.04);
+}
+
+.auth-site-header .logo {
+  color: #16233b;
+}
+
+.auth-site-header .logo small {
+  color: #6c788d;
+}
+
+.auth-site-header .navigation button,
+.auth-site-header .nav-right > button:not(.btn) {
+  color: #4b5870;
+}
+
+.auth-site-header .navigation button:hover,
+.auth-site-header .navigation button.active,
+.auth-site-header .nav-right > button:not(.btn):hover {
+  color: #064b96;
+}
+
+.auth-site-header .navigation button.active {
+  border-bottom-color: #2f64b0;
+}
+
+.auth-site-header .menu-toggle {
+  color: #16233b;
+}
+
+/* HALAMAN UTAMA */
+.auth-stage {
+  min-height: calc(100vh - 150px);
+  padding: 70px 24px 80px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #f7f9fb;
+}
+
+/* KARTU LOGIN */
+.auth-card {
+  width: min(1120px, 100%);
+  min-height: 590px;
+
+  display: grid;
+  grid-template-columns: 42% 58%;
+
+  background: white;
+  border-radius: 17px;
+  box-shadow: 0 14px 32px rgba(20,35,58,.14);
+
+  overflow: hidden;
+}
+
+/* PANEL KIRI */
+.auth-visual {
+  position: relative;
+  min-height: 590px;
+
+  background: #213954;
+  color: white;
+
+  isolation: isolate;
+}
+
+/* FOTO UMY */
+.auth-visual-photo,
+.auth-visual-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.auth-visual-photo {
+  object-fit: cover;
+  object-position: center;
+  z-index: 0;
+}
+
+/* OVERLAY FOTO */
+.auth-visual-overlay {
+  z-index: 1;
+
+  background: linear-gradient(
+    180deg,
+    rgba(22,35,59,.69),
+    rgba(22,35,59,.76)
+  );
+}
+
+.auth-photo-warning {
+  position: absolute;
+  z-index: 5;
+  top: 12px;
+  left: 12px;
+
+  margin: 0;
+  padding: 6px 9px;
+
+  background: #fff4dc;
+  color: #814600;
+  font-size: 11px;
+  border-radius: 7px;
+}
+
+/* KONTEN FOTO */
+.auth-visual-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  min-height: 590px;
+  position: relative;
+  z-index: 2;
+  padding: 42px;
+}
+
+/* LOGO KIRI */
+.auth-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.auth-brand-mark {
+  width: 34px;
+  height: 34px;
+
+  display: grid;
+  place-items: center;
+
+  background: rgba(255,255,255,.24);
+  border-radius: 9px;
+  backdrop-filter: blur(3px);
+}
+
+.auth-brand strong {
+  display: block;
+  font: 800 19px/1.15 "Plus Jakarta Sans", sans-serif;
+}
+
+.auth-brand small {
+  font-size: 10px;
+  color: #e1e8f3;
+}
+
+/* TEKS FOTO */
+.auth-visual-message {
+  margin-block: auto;
+  padding-block: 36px;
+}
+
+.auth-visual-message h2 {
+  max-width: 310px;
+
+  font-size: clamp(24px, 2.4vw, 30px);
+  font-weight: 800;
+  letter-spacing: -.03em;
+  line-height: 1.35;
+
+  margin-bottom: 14px;
+}
+
+.auth-visual-message p {
+  max-width: 335px;
+  color: #f0f3f8;
+
+  line-height: 1.75;
+  font-size: 14px;
+}
+
+.auth-visual-bottom {
+  font-size: 12px;
+  color: #dbe5f1;
+}
+
+/* PANEL KANAN */
+.auth-right {
+  padding: 54px clamp(30px, 5vw, 76px);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 0;
+}
+
+.auth-form-content {
+  width: 100%;
+  max-width: 440px;
+}
+
+/* TAB LOGIN DAN DAFTAR */
+.auth-tabs {
+  display: flex;
+  gap: 4px;
+
+  padding: 4px;
+  border-radius: 12px;
+  margin-bottom: 29px;
+
+  background: #f1f2f5;
+}
+
+.auth-tabs button {
+  flex: 1;
+
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: #58647a;
+
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.auth-tabs button.selected {
+  background: white;
+  color: #064b96;
+  box-shadow: 0 1px 5px rgba(22,35,59,.08);
+}
+
+/* JUDUL FORM */
+.auth-heading {
+  margin-bottom: 23px;
+}
+
+.auth-heading h1 {
+  font-size: 24px;
+  letter-spacing: -.04em;
+  color: #181b20;
+  margin: 0 0 5px;
+}
+
+.auth-heading p {
+  color: #647084;
+  font-size: 14px;
+  margin: 0;
+}
+
+/* FORMULIR */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.auth-register-form {
+  gap: 12px;
+}
+
+.auth-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.auth-field label {
+  color: #25272b;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.auth-field > input,
+.auth-password-wrap > input {
+  width: 100%;
+  height: 45px;
+
+  border: 1px solid #e0e4eb;
+  border-radius: 10px;
+
+  padding: 0 14px;
+
+  background: #fff;
+  color: #1d293b;
+  outline: none;
+
+  box-shadow: 0 1px 3px rgba(20,35,58,.03);
+}
+
+.auth-field input:focus {
+  border-color: #2f64b0;
+  box-shadow: 0 0 0 3px rgba(47,100,176,.13);
+}
+
+.auth-field input::placeholder {
+  color: #7e8796;
+}
+
+/* INPUT PASSWORD */
+.auth-password-wrap {
+  position: relative;
+}
+
+.auth-password-wrap > input {
+  padding-right: 49px;
+}
+
+.auth-eye {
+  position: absolute;
+  top: 0;
+  right: 6px;
+
+  height: 100%;
+  width: 39px;
+
+  display: grid;
+  place-items: center;
+
+  border: 0;
+  background: transparent;
+  color: #65748a;
+}
+
+.auth-eye:hover {
+  color: #2f64b0;
+}
+
+/* INGAT SAYA & LUPA PASSWORD */
+.auth-form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: -1px;
+  font-size: 12px;
+}
+
+.auth-remember {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+
+  color: #5f6b7f;
+  cursor: pointer;
+}
+
+.auth-remember input {
+  width: 16px;
+  height: 16px;
+  accent-color: #2f64b0;
+}
+
+.auth-link,
+.auth-switch button {
+  border: 0;
+  background: transparent;
+
+  color: #064b96;
+  padding: 0;
+
+  font-weight: 700;
+  font-size: inherit;
+}
+
+.auth-link:hover,
+.auth-switch button:hover {
+  text-decoration: underline;
+}
+
+/* TOMBOL LOGIN */
+.auth-submit {
+  margin-top: 3px;
+
+  width: 100%;
+  height: 46px;
+
+  background: #2f64b0;
+  color: #fff;
+
+  font-weight: 700;
+  font-size: 14px;
+
+  border: 0;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(47,100,176,.17);
+}
+
+.auth-submit:hover {
+  background: #064b96;
+}
+
+/* LINK PINDAH HALAMAN */
+.auth-switch {
+  margin-top: 21px;
+  text-align: center;
+
+  color: #626e80;
+  font-size: 14px;
+}
+
+/* PESAN VALIDASI */
+.auth-message {
+  margin: 0;
+  border-radius: 8px;
+  padding: 10px 12px;
+
+  background: #fff4e8;
+  color: #864919;
+  font-size: 12px;
+}
+
+/* INFORMASI DEMO */
+.auth-demo {
+  margin-top: 22px;
+  border-top: 1px solid #eef0f4;
+  padding-top: 12px;
+
+  color: #65748a;
+  font-size: 11px;
+  line-height: 1.65;
+}
+
+.auth-demo summary {
+  cursor: pointer;
+  color: #436080;
+  font-weight: 700;
+}
+
+.auth-demo p {
+  margin-top: 4px;
+}
+
+.auth-demo small {
+  display: block;
+  color: #718096;
+}
+
+/* RESPONSIVE TABLET */
+@media (max-width: 900px) {
+  .auth-card {
+    grid-template-columns: 40% 60%;
+  }
+
+  .auth-visual-content {
+    padding: 27px;
+  }
+
+  .auth-right {
+    padding: 36px 26px;
+  }
+
+  .auth-visual-message h2 {
+    font-size: 24px;
+  }
+}
+
+/* RESPONSIVE HP */
+@media (max-width: 690px) {
+  .auth-stage {
+    padding: 24px 15px 48px;
+    align-items: flex-start;
+  }
+
+  .auth-card {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .auth-visual {
+    min-height: 225px;
+  }
+
+  .auth-visual-content {
+    min-height: 225px;
+    padding: 20px 24px;
+  }
+
+  .auth-visual-message {
+    padding-block: 14px;
+  }
+
+  .auth-visual-message h2 {
+    font-size: 23px;
+    margin-bottom: 6px;
+  }
+
+  .auth-visual-message p {
+    font-size: 12px;
+  }
+
+  .auth-visual-bottom {
+    font-size: 10px;
+  }
+
+  .auth-right {
+    padding: 30px 22px;
+  }
+
+  .auth-tabs {
+    margin-bottom: 23px;
+  }
+
+  .auth-heading h1 {
+    font-size: 22px;
+  }
+
+  .auth-site-header .navigation {
+    background: #f7f9fb;
+  }
+}
