@@ -1,6 +1,11 @@
 
 import { useEffect, useState } from "react";
+
 import AuthPage from "./components/AuthPage.jsx";
+import UserHome from "./UserHome.jsx";
+import CariBarang from "./CariBarang.jsx";
+import LaporHilang from "./LaporHilang.jsx";
+import ProsesAnalisis from "./ProsesAnalisis.jsx";
 
 // ========================================
 // DATA CONTOH FINDIT
@@ -31,7 +36,7 @@ const DATA_AWAL = [
     warna: "Biru Dongker",
     lokasi: "Perpustakaan Pusat Lt. 2",
     waktu: "2026-11-23T11:20",
-    ciri: "Tumbler warna biru dongker dengan tutup hitam",
+    ciri: "Tumbler biru dongker dengan tutup hitam",
     tempat: "Pos Satpam Utama",
     gambar: FOTO.tumbler,
     pelapor: "demo-sistem",
@@ -76,7 +81,7 @@ const DATA_AWAL = [
     warna: "Hitam",
     lokasi: "Kantin Pusat Halal",
     waktu: "2026-11-22T17:30",
-    ciri: "Dompet kulit warna hitam dengan beberapa kartu",
+    ciri: "Dompet kulit hitam dengan beberapa kartu",
     tempat: "Pos Pengelola Kantin",
     gambar: FOTO.dompet,
     pelapor: "demo-sistem",
@@ -91,7 +96,7 @@ const DATA_AWAL = [
     warna: "Hitam",
     lokasi: "Gazebo Rektorat",
     waktu: "2026-11-22T14:10",
-    ciri: "Earbuds Sony hitam beserta kotak pengisian",
+    ciri: "Earbuds Sony hitam dengan kotak pengisian",
     tempat: "Pos Pamdal Rektorat",
     gambar: FOTO.earbuds,
     pelapor: "demo-sistem",
@@ -117,79 +122,99 @@ const DATA_AWAL = [
 const KATEGORI = [
   "Elektronik",
   "Botol Minum",
+  "Dompet",
   "Kunci",
   "Aksesori",
   "Pakaian",
   "Dokumen",
+  "Tas",
   "Lainnya",
 ];
 
 // ========================================
-// HELPER
+// FUNGSI BANTU
 // ========================================
 
-const normalize = (text) =>
-  String(text ?? "").trim().toLowerCase();
+const bersih = (teks) =>
+  String(teks ?? "").trim().toLowerCase();
 
-const tanggal = (value) =>
-  value
-    ? new Date(value).toLocaleString("id-ID", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      })
-    : "-";
+function formatWaktu(value) {
+  if (!value) return "-";
 
-function ambilData(key, fallback, storage = localStorage) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "-";
+  }
+
+  return date.toLocaleString("id-ID", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+}
+
+function baca(key, fallback, store) {
   try {
-    return JSON.parse(storage.getItem(key)) ?? fallback;
+    return JSON.parse(store.getItem(key)) ?? fallback;
   } catch {
     return fallback;
   }
 }
 
-function skorKemiripan(a, b) {
-  let nilai = 0;
+// ========================================
+// SIMULASI PENCOCOKAN BARANG
+// ========================================
 
-  if (normalize(a.kategori) === normalize(b.kategori)) {
-    nilai += 35;
+function skorKemiripan(a, b) {
+  let skor = 0;
+
+  if (bersih(a.kategori) === bersih(b.kategori)) {
+    skor += 35;
   }
 
   if (
     a.merek &&
     b.merek &&
-    normalize(a.merek) === normalize(b.merek)
+    bersih(a.merek) === bersih(b.merek)
   ) {
-    nilai += 20;
+    skor += 20;
   }
 
-  if (normalize(a.warna) === normalize(b.warna)) {
-    nilai += 20;
+  if (
+    a.warna &&
+    b.warna &&
+    bersih(a.warna) === bersih(b.warna)
+  ) {
+    skor += 20;
   }
 
-  if (normalize(a.lokasi) === normalize(b.lokasi)) {
-    nilai += 5;
+  if (bersih(a.lokasi) === bersih(b.lokasi)) {
+    skor += 5;
   }
 
-  const kata = (s) =>
+  const kata = (text) =>
     new Set(
-      normalize(s)
+      bersih(text)
         .split(/[^\p{L}\p{N}]+/u)
         .filter((x) => x.length > 2)
     );
 
-  const kataA = kata(`${a.nama} ${a.ciri}`);
-  const kataB = kata(`${b.nama} ${b.ciri}`);
+  const aKata = kata(`${a.nama} ${a.ciri}`);
+  const bKata = kata(`${b.nama} ${b.ciri}`);
 
-  nilai += Math.min(
-    20,
-    [...kataA].filter((x) => kataB.has(x)).length * 4
+  const jumlahSama = [...aKata].filter((x) =>
+    bKata.has(x)
+  ).length;
+
+  return Math.min(
+    100,
+    skor + Math.min(20, jumlahSama * 4)
   );
-
-  return Math.min(100, nilai);
 }
+
+// ========================================
+// ICON DAN JUDUL
+// ========================================
 
 function Icon({ name }) {
   return (
@@ -213,7 +238,7 @@ function Judul({ label, title, description }) {
 }
 
 // ========================================
-// KOMPONEN KARTU BARANG
+// KARTU BARANG
 // ========================================
 
 function BarangCard({ item, pergi }) {
@@ -247,7 +272,7 @@ function BarangCard({ item, pergi }) {
 
         <p>
           <Icon name="schedule" />
-          {tanggal(item.waktu)} WIB
+          {formatWaktu(item.waktu)} WIB
         </p>
 
         <div className="item-bottom">
@@ -268,18 +293,18 @@ function BarangCard({ item, pergi }) {
 }
 
 // ========================================
-// HALAMAN BERANDA
+// BERANDA AWAL
 // ========================================
 
 function Beranda({ barang, pergi, cari }) {
   const [teks, setTeks] = useState("");
-  const [fotoSiap, setFotoSiap] = useState(true);
+  const [fotoAda, setFotoAda] = useState(true);
 
   const terbaru = barang
     .filter(
-      (x) =>
-        x.tipe === "DITEMUKAN" &&
-        x.status !== "Dikembalikan"
+      (b) =>
+        b.tipe === "DITEMUKAN" &&
+        b.status !== "Dikembalikan"
     )
     .slice(0, 6);
 
@@ -287,44 +312,43 @@ function Beranda({ barang, pergi, cari }) {
     [
       "post_add",
       "Lapor",
-      "Isi ciri, foto, waktu, dan lokasi barang hilang atau ditemukan.",
+      "Isi ciri, foto, waktu dan lokasi barang yang hilang atau ditemukan.",
     ],
     [
       "psychology",
       "Analisis Ciri",
-      "Sistem membandingkan jenis, warna, merek, dan deskripsi.",
+      "Sistem membandingkan jenis, warna, merek dan deskripsi.",
     ],
     [
       "radar",
       "Lihat Rekomendasi",
-      "Lihat barang yang memiliki kemiripan paling relevan.",
+      "Lihat barang yang memiliki ciri paling mirip.",
     ],
     [
       "domain_verification",
       "Konfirmasi & Ambil",
-      "Ajukan klaim dan lakukan verifikasi dengan petugas.",
+      "Ajukan klaim dan tunggu verifikasi petugas.",
     ],
   ];
 
   return (
     <>
       <section className="hero">
-        {fotoSiap && (
+        {fotoAda && (
           <img
             className="hero-photo"
             src="/umy.jpg"
-            alt=""
-            aria-hidden="true"
-            onError={() => setFotoSiap(false)}
+            alt="Kampus UMY"
+            onError={() => setFotoAda(false)}
           />
         )}
 
         <div className="hero-overlay" />
 
-        {!fotoSiap && (
+        {!fotoAda && (
           <p className="hero-error">
-            Foto tidak ditemukan. Periksa file:
-            frontend/public/umy.jpg
+            Foto UMY tidak ditemukan.
+            Periksa frontend/public/umy.jpg.
           </p>
         )}
 
@@ -335,9 +359,10 @@ function Beranda({ barang, pergi, cari }) {
           </h1>
 
           <p>
-            Satu tempat terpusat untuk melapor dan mencari
-            barang hilang di kampus, dibantu rekomendasi
-            pencocokan berdasarkan ciri-ciri barang.
+            Satu tempat terpusat untuk melapor
+            dan mencari barang hilang di kampus,
+            dibantu rekomendasi pencocokan
+            berdasarkan ciri-ciri barang.
           </p>
 
           <div className="hero-actions">
@@ -415,15 +440,17 @@ function Beranda({ barang, pergi, cari }) {
           </div>
 
           <div className="step-grid">
-            {langkah.map(([icon, title, text], i) => (
-              <article className="step" key={title}>
+            {langkah.map(([ikon, judul, deskripsi], i) => (
+              <article className="step" key={judul}>
                 <span className="step-icon">
-                  <Icon name={icon} />
+                  <Icon name={ikon} />
                 </span>
 
                 <small>LANGKAH 0{i + 1}</small>
-                <h3>{i + 1}. {title}</h3>
-                <p>{text}</p>
+                <h3>
+                  {i + 1}. {judul}
+                </h3>
+                <p>{deskripsi}</p>
               </article>
             ))}
           </div>
@@ -437,9 +464,11 @@ function Beranda({ barang, pergi, cari }) {
               <span className="eyebrow green">
                 ● PEMBARUAN BARANG
               </span>
+
               <h2>Barang Terbaru Ditemukan</h2>
+
               <p>
-                Barang yang baru saja dilaporkan ditemukan
+                Barang yang baru dilaporkan ditemukan
                 di lingkungan kampus.
               </p>
             </div>
@@ -453,10 +482,10 @@ function Beranda({ barang, pergi, cari }) {
           </div>
 
           <div className="card-grid">
-            {terbaru.map((item) => (
+            {terbaru.map((b) => (
               <BarangCard
-                key={item.id}
-                item={item}
+                key={b.id}
+                item={b}
                 pergi={pergi}
               />
             ))}
@@ -477,16 +506,16 @@ function Beranda({ barang, pergi, cari }) {
             </h2>
 
             <p>
-              FindIt membandingkan laporan barang hilang
-              dan ditemukan untuk menampilkan rekomendasi.
-              Saat ini skor adalah simulasi frontend.
-              Keputusan kepemilikan tetap melalui
-              verifikasi admin.
+              FindIt membandingkan laporan hilang dan
+              ditemukan. Skor kecocokan saat ini masih
+              simulasi frontend, bukan AI/NLP sungguhan.
+              Klaim tetap diperiksa admin.
             </p>
 
             <div className="feature-grid">
               <div>
                 <Icon name="id_card" />
+
                 <span>
                   <strong>Verifikasi Kepemilikan</strong>
                   <small>
@@ -498,11 +527,12 @@ function Beranda({ barang, pergi, cari }) {
 
               <div>
                 <Icon name="lock" />
+
                 <span>
                   <strong>Privasi Pengguna</strong>
                   <small>
-                    Jangan mengirim data pribadi asli
-                    saat mencoba demo.
+                    Jangan masukkan data pribadi asli
+                    dalam prototype.
                   </small>
                 </span>
               </div>
@@ -517,6 +547,7 @@ function Beranda({ barang, pergi, cari }) {
             <h3>
               Punya pertanyaan mengenai barang temuan?
             </h3>
+
             <p>
               Hubungi petugas kampus untuk bantuan
               pengambilan barang.
@@ -536,106 +567,7 @@ function Beranda({ barang, pergi, cari }) {
 }
 
 // ========================================
-// HALAMAN CARI BARANG
-// ========================================
-
-function HalamanCari({ barang, keyword, pergi }) {
-  const [teks, setTeks] = useState(keyword);
-  const [tipe, setTipe] = useState("");
-  const [kategori, setKategori] = useState("");
-  const [lokasi, setLokasi] = useState("");
-
-  useEffect(() => {
-    setTeks(keyword);
-  }, [keyword]);
-
-  const hasil = barang.filter(
-    (x) =>
-      x.status !== "Dikembalikan" &&
-      (!tipe || x.tipe === tipe) &&
-      (!kategori || x.kategori === kategori) &&
-      normalize(x.lokasi).includes(normalize(lokasi)) &&
-      normalize(
-        [
-          x.nama,
-          x.merek,
-          x.warna,
-          x.ciri,
-          x.kategori,
-        ].join(" ")
-      ).includes(normalize(teks))
-  );
-
-  return (
-    <div className="container page">
-      <Judul
-        label="PENCARIAN BARANG"
-        title="Cari Barang"
-        description="Cari laporan menurut nama, warna, jenis, merek, atau lokasi."
-      />
-
-      <div className="filters">
-        <input
-          aria-label="Kata kunci"
-          placeholder="Nama, warna, merek, ciri..."
-          value={teks}
-          onChange={(e) => setTeks(e.target.value)}
-        />
-
-        <select
-          aria-label="Jenis laporan"
-          value={tipe}
-          onChange={(e) => setTipe(e.target.value)}
-        >
-          <option value="">Semua laporan</option>
-          <option value="DITEMUKAN">Ditemukan</option>
-          <option value="HILANG">Hilang</option>
-        </select>
-
-        <select
-          aria-label="Kategori"
-          value={kategori}
-          onChange={(e) => setKategori(e.target.value)}
-        >
-          <option value="">Semua kategori</option>
-          {KATEGORI.map((k) => (
-            <option key={k}>{k}</option>
-          ))}
-        </select>
-
-        <input
-          aria-label="Lokasi"
-          placeholder="Lokasi kampus"
-          value={lokasi}
-          onChange={(e) => setLokasi(e.target.value)}
-        />
-      </div>
-
-      <p className="result-count">
-        {hasil.length} laporan ditemukan (data demo)
-      </p>
-
-      {hasil.length ? (
-        <div className="card-grid">
-          {hasil.map((item) => (
-            <BarangCard
-              key={item.id}
-              item={item}
-              pergi={pergi}
-            />
-          ))}
-        </div>
-      ) : (
-        <div className="empty">
-          Belum ada hasil. Coba kata kunci atau filter lain.
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ========================================
-// PROSES FOTO
+// PENGOLAHAN FOTO
 // ========================================
 
 function prosesFoto(file) {
@@ -657,7 +589,7 @@ function prosesFoto(file) {
 
   if (file.size > 4 * 1024 * 1024) {
     return Promise.reject(
-      new Error("Ukuran foto maksimal 4 MB.")
+      new Error("Foto maksimal 4 MB.")
     );
   }
 
@@ -667,30 +599,35 @@ function prosesFoto(file) {
 
     image.onerror = () => {
       URL.revokeObjectURL(url);
-      reject(new Error("Foto tidak bisa dibaca."));
+      reject(new Error("Foto tidak dapat dibaca."));
     };
 
     image.onload = () => {
-      const ratio = Math.min(
-        1,
-        700 / Math.max(image.width, image.height)
-      );
+      try {
+        const ratio = Math.min(
+          1,
+          700 / Math.max(image.width, image.height)
+        );
 
-      const canvas = document.createElement("canvas");
+        const canvas = document.createElement("canvas");
 
-      canvas.width = Math.max(
-        1,
-        Math.round(image.width * ratio)
-      );
+        canvas.width = Math.max(
+          1,
+          Math.round(image.width * ratio)
+        );
 
-      canvas.height = Math.max(
-        1,
-        Math.round(image.height * ratio)
-      );
+        canvas.height = Math.max(
+          1,
+          Math.round(image.height * ratio)
+        );
 
-      canvas
-        .getContext("2d")
-        .drawImage(
+        const context = canvas.getContext("2d");
+
+        if (!context) {
+          throw new Error("Gagal memproses foto.");
+        }
+
+        context.drawImage(
           image,
           0,
           0,
@@ -698,8 +635,12 @@ function prosesFoto(file) {
           canvas.height
         );
 
-      URL.revokeObjectURL(url);
-      resolve(canvas.toDataURL("image/jpeg", 0.7));
+        resolve(canvas.toDataURL("image/jpeg", 0.7));
+      } catch (error) {
+        reject(error);
+      } finally {
+        URL.revokeObjectURL(url);
+      }
     };
 
     image.src = url;
@@ -707,10 +648,15 @@ function prosesFoto(file) {
 }
 
 // ========================================
-// HALAMAN FORM LAPORAN
+// LAPOR BARANG DITEMUKAN
 // ========================================
 
-function FormLaporan({ tipe, pengguna, simpan, pergi }) {
+function FormLaporan({
+  tipe,
+  pengguna,
+  simpan,
+  pergi,
+}) {
   const [memproses, setMemproses] = useState(false);
 
   const sekarang = new Date(
@@ -720,13 +666,48 @@ function FormLaporan({ tipe, pengguna, simpan, pergi }) {
     .toISOString()
     .slice(0, 16);
 
+  async function kirim(e) {
+    e.preventDefault();
+
+    const fd = new FormData(e.currentTarget);
+
+    setMemproses(true);
+
+    try {
+      const foto = await prosesFoto(fd.get("foto"));
+
+      simpan({
+        id: crypto.randomUUID(),
+        tipe,
+        nama: String(fd.get("nama")).trim(),
+        kategori: String(fd.get("kategori")),
+        merek: String(fd.get("merek") || "").trim(),
+        warna: String(fd.get("warna")).trim(),
+        lokasi: String(fd.get("lokasi")).trim(),
+        waktu: String(fd.get("waktu")),
+        ciri: String(fd.get("ciri")).trim(),
+        tempat: String(fd.get("tempat") || "").trim(),
+        gambar: foto,
+        pelapor: pengguna.email,
+        status:
+          tipe === "HILANG" ? "Hilang" : "Ditemukan",
+      });
+    } catch (error) {
+      alert(
+        error.message || "Gagal menyimpan laporan."
+      );
+    } finally {
+      setMemproses(false);
+    }
+  }
+
   if (!pengguna) {
     return (
       <div className="container page">
         <Judul
-          label="LOGIN DIPERLUKAN"
+          label="AKUN"
           title="Masuk untuk Membuat Laporan"
-          description="Gunakan akun demo sebelum mengirim laporan."
+          description="Login terlebih dahulu."
         />
 
         <button
@@ -739,38 +720,6 @@ function FormLaporan({ tipe, pengguna, simpan, pergi }) {
     );
   }
 
-  async function submit(event) {
-    event.preventDefault();
-
-    const form = new FormData(event.currentTarget);
-    setMemproses(true);
-
-    try {
-      const foto = await prosesFoto(form.get("foto"));
-
-      simpan({
-        id: crypto.randomUUID(),
-        tipe,
-        nama: String(form.get("nama")).trim(),
-        kategori: String(form.get("kategori")),
-        merek: String(form.get("merek") || "").trim(),
-        warna: String(form.get("warna")).trim(),
-        lokasi: String(form.get("lokasi")).trim(),
-        waktu: String(form.get("waktu")),
-        ciri: String(form.get("ciri")).trim(),
-        tempat: String(form.get("tempat") || "").trim(),
-        gambar: foto || FOTO.dompet,
-        pelapor: pengguna.email,
-        status:
-          tipe === "HILANG" ? "Hilang" : "Ditemukan",
-      });
-    } catch (error) {
-      alert(error.message || "Gagal menyimpan foto.");
-    } finally {
-      setMemproses(false);
-    }
-  }
-
   return (
     <div className="container page">
       <Judul
@@ -778,13 +727,13 @@ function FormLaporan({ tipe, pengguna, simpan, pergi }) {
         title={`Lapor Barang ${
           tipe === "HILANG" ? "Hilang" : "Ditemukan"
         }`}
-        description="Masukkan informasi barang selengkap mungkin untuk membantu pencocokan."
+        description="Lengkapi ciri barang agar mudah dicocokkan."
       />
 
       <div className="content-grid">
         <form
           className="panel form-grid"
-          onSubmit={submit}
+          onSubmit={kirim}
         >
           <label className="field full">
             Nama barang *
@@ -792,7 +741,7 @@ function FormLaporan({ tipe, pengguna, simpan, pergi }) {
               name="nama"
               required
               maxLength={120}
-              placeholder="Contoh: Kunci Honda Vario hitam"
+              placeholder="Contoh: Kunci Honda Vario"
             />
           </label>
 
@@ -841,28 +790,22 @@ function FormLaporan({ tipe, pengguna, simpan, pergi }) {
           </label>
 
           <label className="field full">
-            Lokasi{" "}
-            {tipe === "HILANG"
-              ? "terakhir terlihat"
-              : "penemuan"}{" "}
-            *
+            Lokasi Penemuan *
             <input
               name="lokasi"
               required
-              placeholder="Contoh: Perpustakaan Pusat Lt. 2"
+              placeholder="Contoh: Perpustakaan UMY"
             />
           </label>
 
-          {tipe === "DITEMUKAN" && (
-            <label className="field full">
-              Tempat penyimpanan *
-              <input
-                name="tempat"
-                required
-                placeholder="Contoh: Pos Satpam Utama"
-              />
-            </label>
-          )}
+          <label className="field full">
+            Tempat penyimpanan *
+            <input
+              name="tempat"
+              required
+              placeholder="Contoh: Pos Satpam"
+            />
+          </label>
 
           <label className="field full">
             Ciri khusus / deskripsi *
@@ -871,20 +814,21 @@ function FormLaporan({ tipe, pengguna, simpan, pergi }) {
               minLength={10}
               rows={4}
               required
-              placeholder="Deskripsikan ukuran, bentuk, dan ciri khusus barang..."
+              placeholder="Jelaskan ukuran, bentuk dan ciri khusus..."
             />
           </label>
 
           <label className="field full">
-            Foto barang (opsional)
+            Foto (opsional)
             <input
               name="foto"
               type="file"
-              accept="image/png,image/jpeg,image/webp"
+              accept="image/jpeg,image/png,image/webp"
             />
+
             <small>
-              Maksimal 4 MB. Untuk demo disimpan
-              di browser.
+              Foto maksimal 4 MB dan disimpan lokal
+              untuk demo.
             </small>
           </label>
 
@@ -910,21 +854,21 @@ function FormLaporan({ tipe, pengguna, simpan, pergi }) {
         </form>
 
         <aside className="panel tips">
-          <h3>Tips pelaporan</h3>
+          <h3>Tips Pelaporan</h3>
+
           <p>
-            Isi warna, merek, lokasi, waktu,
-            dan ciri barang dengan jelas.
+            Jelaskan warna, merek, waktu,
+            lokasi, dan ciri khusus dengan detail.
           </p>
 
           <div className="info-box">
-            Setelah laporan disimpan, rekomendasi
-            kecocokan langsung ditampilkan.
+            Setelah disimpan, sistem menampilkan
+            rekomendasi kecocokan.
           </div>
 
           <div className="notice">
-            Gunakan informasi contoh. Jangan masukkan
-            identitas pribadi atau data rahasia
-            di prototype.
+            Prototype frontend: gunakan data contoh,
+            bukan data pribadi asli.
           </div>
         </aside>
       </div>
@@ -933,10 +877,14 @@ function FormLaporan({ tipe, pengguna, simpan, pergi }) {
 }
 
 // ========================================
-// HALAMAN DETAIL BARANG
+// DETAIL BARANG
 // ========================================
 
-function DetailBarang({ barang, pengguna, pergi }) {
+function DetailBarang({
+  barang,
+  pengguna,
+  pergi,
+}) {
   if (!barang) {
     return (
       <div className="container page">
@@ -947,24 +895,26 @@ function DetailBarang({ barang, pengguna, pergi }) {
 
   const rincian = [
     [
-      "Tipe laporan",
-      barang.tipe === "HILANG" ? "Hilang" : "Ditemukan",
+      "Jenis laporan",
+      barang.tipe === "HILANG"
+        ? "Hilang"
+        : "Ditemukan",
     ],
     ["Kategori", barang.kategori],
     ["Merek", barang.merek || "-"],
     ["Warna", barang.warna],
     ["Lokasi", barang.lokasi],
-    ["Waktu", `${tanggal(barang.waktu)} WIB`],
+    ["Waktu", `${formatWaktu(barang.waktu)} WIB`],
     ["Deskripsi", barang.ciri],
-    ["Tempat penyimpanan", barang.tempat || "-"],
+    ["Penyimpanan", barang.tempat || "-"],
   ];
 
   return (
     <div className="container page">
       <Judul
-        label="DETAIL LAPORAN"
+        label="DETAIL BARANG"
         title={barang.nama}
-        description="Periksa ciri dan status sebelum mengajukan klaim."
+        description="Periksa ciri-ciri barang sebelum mengajukan klaim."
       />
 
       <div className="content-grid">
@@ -976,10 +926,10 @@ function DetailBarang({ barang, pengguna, pergi }) {
           />
 
           <dl className="details">
-            {rincian.map(([nama, nilai]) => (
-              <div key={nama}>
-                <dt>{nama}</dt>
-                <dd>{nilai}</dd>
+            {rincian.map(([k, v]) => (
+              <div key={k}>
+                <dt>{k}</dt>
+                <dd>{v}</dd>
               </div>
             ))}
           </dl>
@@ -995,13 +945,13 @@ function DetailBarang({ barang, pengguna, pergi }) {
           </h3>
 
           <p>
-            Ajukan bukti kepemilikan. Admin akan
-            memeriksa klaim sebelum barang diserahkan.
+            Ajukan klaim dengan bukti kepemilikan
+            untuk diperiksa oleh petugas.
           </p>
 
           {barang.tipe === "DITEMUKAN" &&
           barang.status === "Ditemukan" &&
-          pengguna?.email !== barang.pelapor ? (
+          barang.pelapor !== pengguna?.email ? (
             <button
               className="btn btn-primary btn-block"
               onClick={() =>
@@ -1012,13 +962,12 @@ function DetailBarang({ barang, pengguna, pergi }) {
             </button>
           ) : (
             <div className="notice">
-              Klaim belum tersedia untuk laporan ini.
+              Klaim tidak tersedia untuk laporan ini.
             </div>
           )}
 
           <div className="info-box">
-            Skor rekomendasi tidak membuktikan
-            kepemilikan barang.
+            Rekomendasi bukan bukti kepemilikan.
           </div>
         </aside>
       </div>
@@ -1027,10 +976,10 @@ function DetailBarang({ barang, pengguna, pergi }) {
 }
 
 // ========================================
-// HALAMAN REKOMENDASI
+// REKOMENDASI BARANG
 // ========================================
 
-function HalamanRekomendasi({ acuan, barang, pergi }) {
+function Rekomendasi({ acuan, barang, pergi }) {
   if (!acuan) {
     return (
       <div className="container page">
@@ -1041,16 +990,16 @@ function HalamanRekomendasi({ acuan, barang, pergi }) {
 
   const hasil = barang
     .filter(
-      (x) =>
-        x.id !== acuan.id &&
-        x.tipe !== acuan.tipe &&
-        ["Ditemukan", "Hilang"].includes(x.status)
+      (b) =>
+        b.id !== acuan.id &&
+        b.tipe !== acuan.tipe &&
+        ["Hilang", "Ditemukan"].includes(b.status)
     )
-    .map((x) => ({
-      ...x,
-      skor: skorKemiripan(acuan, x),
+    .map((b) => ({
+      ...b,
+      skor: skorKemiripan(acuan, b),
     }))
-    .filter((x) => x.skor >= 20)
+    .filter((b) => b.skor >= 20)
     .sort((a, b) => b.skor - a.skor)
     .slice(0, 5);
 
@@ -1059,37 +1008,36 @@ function HalamanRekomendasi({ acuan, barang, pergi }) {
       <Judul
         label="SIMULASI MATCHING"
         title="Rekomendasi Kecocokan"
-        description={`Laporan acuan: ${acuan.nama}`}
+        description={`Laporan: ${acuan.nama}`}
       />
 
       <div className="notice">
-        Skor ini perbandingan atribut dan kata,
-        bukan prediksi AI/NLP atau kepastian
-        barang milik seseorang.
+        Skor kemiripan masih simulasi atribut,
+        bukan hasil AI/NLP asli.
       </div>
 
       <div className="match-list">
         {hasil.length ? (
-          hasil.map((x) => (
-            <article className="match" key={x.id}>
+          hasil.map((b) => (
+            <article className="match" key={b.id}>
               <img
-                src={x.gambar || FOTO.dompet}
-                alt={x.nama}
+                src={b.gambar || FOTO.dompet}
+                alt={b.nama}
               />
 
               <div>
-                <h3>{x.nama}</h3>
+                <h3>{b.nama}</h3>
                 <p>
-                  {x.kategori} · {x.warna} · {x.lokasi}
+                  {b.kategori} · {b.warna} · {b.lokasi}
                 </p>
               </div>
 
-              <strong>{x.skor}%</strong>
+              <strong>{b.skor}%</strong>
 
               <button
                 className="btn btn-soft btn-small"
                 onClick={() =>
-                  pergi(`detail/${x.id}`)
+                  pergi(`detail/${b.id}`)
                 }
               >
                 Detail
@@ -1108,14 +1056,14 @@ function HalamanRekomendasi({ acuan, barang, pergi }) {
         className="btn btn-outline"
         onClick={() => pergi("laporan-saya")}
       >
-        Lihat Laporan Saya
+        Laporan Saya
       </button>
     </div>
   );
 }
 
 // ========================================
-// HALAMAN KLAIM BARANG
+// KLAIM BARANG
 // ========================================
 
 function HalamanKlaim({
@@ -1127,11 +1075,7 @@ function HalamanKlaim({
   if (!pengguna) {
     return (
       <div className="container page">
-        <Judul
-          label="LOGIN DIPERLUKAN"
-          title="Masuk untuk Klaim"
-          description="Gunakan akun demo dahulu."
-        />
+        <h2>Masuk untuk mengajukan klaim.</h2>
 
         <button
           className="btn btn-primary"
@@ -1156,6 +1100,17 @@ function HalamanKlaim({
     );
   }
 
+  function kirimForm(e) {
+    e.preventDefault();
+
+    const formData = new FormData(e.currentTarget);
+
+    kirim(
+      barang.id,
+      formData.get("bukti")
+    );
+  }
+
   return (
     <div className="container page">
       <Judul
@@ -1166,33 +1121,26 @@ function HalamanKlaim({
 
       <form
         className="panel auth-panel"
-        onSubmit={(e) => {
-          e.preventDefault();
-
-          kirim(
-            barang.id,
-            new FormData(e.currentTarget).get("bukti")
-          );
-        }}
+        onSubmit={kirimForm}
       >
         <label className="field">
           Bukti kepemilikan *
           <textarea
             name="bukti"
-            required
-            minLength={15}
             rows={5}
-            placeholder="Tuliskan ciri khusus yang dapat diverifikasi petugas..."
+            minLength={15}
+            required
+            placeholder="Jelaskan ciri khusus yang dapat dibuktikan..."
           />
         </label>
 
         <div className="notice">
-          Gunakan data dummy untuk simulasi.
+          Gunakan data contoh untuk pengujian prototype.
         </div>
 
         <button
-          className="btn btn-primary btn-block"
           type="submit"
+          className="btn btn-primary btn-block"
         >
           Kirim Klaim
         </button>
@@ -1202,7 +1150,7 @@ function HalamanKlaim({
 }
 
 // ========================================
-// HALAMAN LAPORAN SAYA
+// LAPORAN SAYA
 // ========================================
 
 function LaporanSaya({
@@ -1214,11 +1162,7 @@ function LaporanSaya({
   if (!pengguna) {
     return (
       <div className="container page">
-        <Judul
-          label="LAPORAN SAYA"
-          title="Silakan Masuk"
-          description="Login untuk melihat aktivitasmu."
-        />
+        <h2>Silakan login terlebih dahulu.</h2>
 
         <button
           className="btn btn-primary"
@@ -1230,11 +1174,11 @@ function LaporanSaya({
     );
   }
 
-  const milikSaya = barang.filter(
-    (x) => x.pelapor === pengguna.email
+  const laporan = barang.filter(
+    (b) => b.pelapor === pengguna.email
   );
 
-  const klaimSaya = klaim.filter(
+  const daftarKlaim = klaim.filter(
     (x) => x.email === pengguna.email
   );
 
@@ -1247,35 +1191,44 @@ function LaporanSaya({
       />
 
       <section className="panel block">
-        <h2>
-          Daftar Laporan ({milikSaya.length})
-        </h2>
+        <h2>Daftar Laporan ({laporan.length})</h2>
 
-        {milikSaya.length ? (
-          milikSaya.map((x) => (
+        {laporan.length ? (
+          laporan.map((b) => (
             <div
               className="list-row"
-              key={x.id}
+              key={b.id}
             >
               <div>
-                <strong>{x.nama}</strong>
+                <strong>{b.nama}</strong>
+
                 <p>
-                  {x.tipe === "HILANG"
+                  {b.tipe === "HILANG"
                     ? "Hilang"
-                    : "Ditemukan"}
-                  {" · "}
-                  {x.status}
+                    : "Ditemukan"}{" "}
+                  · {b.status}
                 </p>
               </div>
 
-              <button
-                className="btn btn-soft btn-small"
-                onClick={() =>
-                  pergi(`rekomendasi/${x.id}`)
-                }
-              >
-                Rekomendasi
-              </button>
+              <div className="button-group">
+                <button
+                  className="btn btn-soft btn-small"
+                  onClick={() =>
+                    pergi(`detail/${b.id}`)
+                  }
+                >
+                  Detail
+                </button>
+
+                <button
+                  className="btn btn-primary btn-small"
+                  onClick={() =>
+                    pergi(`rekomendasi/${b.id}`)
+                  }
+                >
+                  Rekomendasi
+                </button>
+              </div>
             </div>
           ))
         ) : (
@@ -1286,12 +1239,10 @@ function LaporanSaya({
       </section>
 
       <section className="panel block">
-        <h2>
-          Status Klaim ({klaimSaya.length})
-        </h2>
+        <h2>Status Klaim ({daftarKlaim.length})</h2>
 
-        {klaimSaya.length ? (
-          klaimSaya.map((x) => (
+        {daftarKlaim.length ? (
+          daftarKlaim.map((x) => (
             <div
               className="list-row"
               key={x.id}
@@ -1303,7 +1254,7 @@ function LaporanSaya({
                   )?.nama || "Barang"}
                 </strong>
 
-                <p>{tanggal(x.tanggal)} WIB</p>
+                <p>{formatWaktu(x.tanggal)}</p>
               </div>
 
               <span className="status inline">
@@ -1317,6 +1268,13 @@ function LaporanSaya({
           </p>
         )}
       </section>
+
+      <button
+        className="btn btn-outline"
+        onClick={() => pergi("beranda-pengguna")}
+      >
+        Kembali ke Beranda Pengguna
+      </button>
     </div>
   );
 }
@@ -1357,7 +1315,7 @@ function Admin({
       <Judul
         label="PANEL ADMIN"
         title="Dashboard Admin"
-        description="Kelola laporan dan verifikasi klaim pada data simulasi."
+        description="Verifikasi klaim dan kelola laporan barang demo."
       />
 
       <section className="panel block">
@@ -1411,24 +1369,18 @@ function Admin({
       </section>
 
       <section className="panel block">
-        <h2>
-          Kelola Data Barang ({barang.length})
-        </h2>
+        <h2>Kelola Data Barang ({barang.length})</h2>
 
-        {barang.map((x) => (
+        {barang.map((b) => (
           <div
             className="list-row admin-row"
-            key={x.id}
+            key={b.id}
           >
             <div>
-              <strong>{x.nama}</strong>
+              <strong>{b.nama}</strong>
 
               <p>
-                {x.tipe === "HILANG"
-                  ? "Hilang"
-                  : "Ditemukan"}
-                {" · "}
-                {x.status}
+                {b.tipe} · {b.status}
               </p>
             </div>
 
@@ -1436,7 +1388,7 @@ function Admin({
               <button
                 className="btn btn-soft btn-small"
                 onClick={() =>
-                  pergi(`detail/${x.id}`)
+                  pergi(`detail/${b.id}`)
                 }
               >
                 Lihat
@@ -1444,9 +1396,7 @@ function Admin({
 
               <button
                 className="btn btn-danger btn-small"
-                onClick={() =>
-                  hapus(x.id)
-                }
+                onClick={() => hapus(b.id)}
               >
                 Hapus
               </button>
@@ -1459,35 +1409,154 @@ function Admin({
 }
 
 // ========================================
+// HALAMAN INFORMASI
+// ========================================
+
+function HalamanInformasi({
+  halaman,
+  pengguna,
+  pergi,
+}) {
+  const profil = halaman === "profil-saya";
+
+  const bantuan =
+    halaman === "bantuan" ||
+    halaman === "bantuan-klaim";
+
+  return (
+    <div className="container page">
+      <Judul
+        label={
+          profil
+            ? "AKUN"
+            : bantuan
+              ? "PANDUAN"
+              : "INFORMASI"
+        }
+        title={
+          profil
+            ? "Profil Saya"
+            : bantuan
+              ? "Cara Klaim Barang"
+              : "Kebijakan Privasi"
+        }
+        description="Informasi FindIt versi prototype."
+      />
+
+      <section className="panel block">
+        {profil ? (
+          <>
+            <h2>
+              {pengguna?.nama || "Belum login"}
+            </h2>
+
+            <p>
+              Email: {pengguna?.email || "-"}
+            </p>
+
+            <p>
+              NIM/NIP:{" "}
+              {pengguna?.nomorInduk || "Belum diisi"}
+            </p>
+          </>
+        ) : bantuan ? (
+          <>
+            <h2>Proses klaim barang</h2>
+
+            <p>
+              1. Cari barang yang mirip dengan milikmu.
+            </p>
+
+            <p>
+              2. Buka detail barang dan ajukan klaim.
+            </p>
+
+            <p>
+              3. Isi bukti kepemilikan dan tunggu
+              verifikasi admin.
+            </p>
+
+            <p>
+              4. Ambil barang sesuai petunjuk petugas.
+            </p>
+          </>
+        ) : (
+          <p>
+            FindIt masih prototype frontend.
+            Login dan data tersimpan di browser
+            untuk demo, belum menggunakan autentikasi server.
+          </p>
+        )}
+
+        <button
+          className="btn btn-primary"
+          onClick={() => pergi("beranda")}
+        >
+          Kembali ke Beranda
+        </button>
+      </section>
+    </div>
+  );
+}
+
+// ========================================
 // APLIKASI UTAMA FINDIT
 // ========================================
 
 export default function App() {
+  // ======================================
+  // DATA BARANG
+  // ======================================
+
   const [barang, setBarang] = useState(() =>
-    ambilData("findit_barang_final_v1", DATA_AWAL)
+    baca(
+      "findit_barang_final_v1",
+      DATA_AWAL,
+      localStorage
+    )
   );
+
+  // ======================================
+  // DATA KLAIM
+  // ======================================
 
   const [klaim, setKlaim] = useState(() =>
-    ambilData("findit_klaim_final_v1", [])
+    baca(
+      "findit_klaim_final_v1",
+      [],
+      localStorage
+    )
   );
 
+  // ======================================
+  // SESI PENGGUNA
+  // ======================================
+
   const [pengguna, setPengguna] = useState(() =>
-    ambilData(
+    baca(
       "findit_user_final_v1",
       null,
       sessionStorage
     )
   );
 
+  // ======================================
+  // ROUTING HALAMAN
+  // ======================================
+
   const [rute, setRute] = useState(
     () =>
-      window.location.hash.slice(1) || "beranda"
+      window.location.hash.replace(/^#\/?/, "") ||
+      "beranda"
   );
 
   const [kataCari, setKataCari] = useState("");
   const [menuBuka, setMenuBuka] = useState(false);
 
-  // Simpan data demo
+  // ======================================
+  // PENYIMPANAN DATA
+  // ======================================
+
   useEffect(() => {
     try {
       localStorage.setItem(
@@ -1495,9 +1564,7 @@ export default function App() {
         JSON.stringify(barang)
       );
     } catch {
-      console.warn(
-        "Gagal menyimpan laporan (storage penuh)."
-      );
+      console.warn("Penyimpanan laporan penuh.");
     }
   }, [barang]);
 
@@ -1508,58 +1575,94 @@ export default function App() {
         JSON.stringify(klaim)
       );
     } catch {
-      console.warn(
-        "Gagal menyimpan klaim (storage penuh)."
-      );
+      console.warn("Penyimpanan klaim penuh.");
     }
   }, [klaim]);
 
-  // Sesi pengguna
   useEffect(() => {
-    if (pengguna) {
-      sessionStorage.setItem(
-        "findit_user_final_v1",
-        JSON.stringify(pengguna)
-      );
-    } else {
-      sessionStorage.removeItem(
-        "findit_user_final_v1"
-      );
+    try {
+      if (pengguna) {
+        sessionStorage.setItem(
+          "findit_user_final_v1",
+          JSON.stringify(pengguna)
+        );
+      } else {
+        sessionStorage.removeItem(
+          "findit_user_final_v1"
+        );
+      }
+    } catch {
+      console.warn("Gagal menyimpan sesi.");
     }
   }, [pengguna]);
 
-  // Sinkronisasi halaman
+  // ======================================
+  // SINKRONISASI URL
+  // ======================================
+
   useEffect(() => {
     const sinkron = () => {
       setRute(
-        window.location.hash.slice(1) || "beranda"
+        window.location.hash.replace(/^#\/?/, "") ||
+          "beranda"
       );
 
       setMenuBuka(false);
       window.scrollTo(0, 0);
     };
 
-    window.addEventListener("hashchange", sinkron);
+    window.addEventListener(
+      "hashchange",
+      sinkron
+    );
 
     return () =>
-      window.removeEventListener("hashchange", sinkron);
+      window.removeEventListener(
+        "hashchange",
+        sinkron
+      );
   }, []);
 
-  function pergi(halaman) {
-    window.location.hash = halaman;
-    setRute(halaman);
+  // ======================================
+  // NAVIGASI
+  // ======================================
+
+  function pergi(tujuan) {
+    const route =
+      tujuan === "beranda" &&
+      pengguna?.role === "user"
+        ? "beranda-pengguna"
+        : tujuan;
+
+    window.location.hash = route;
+
+    setRute(route);
     setMenuBuka(false);
     window.scrollTo(0, 0);
   }
 
-  function cari(teks) {
+  function cari(teks = "") {
     setKataCari(teks);
     pergi("cari");
   }
 
+  // ======================================
+  // SIMPAN LAPORAN BARU
+  // ======================================
+  // Barang HILANG masuk ke Proses Analisis.
+  // Barang DITEMUKAN langsung ke rekomendasi.
+
   function simpanLaporan(data) {
-    setBarang((lama) => [data, ...lama]);
-    pergi(`rekomendasi/${data.id}`);
+    setBarang((lama) => [
+      data,
+      ...lama,
+    ]);
+
+    if (data.tipe === "HILANG") {
+      pergi(`proses-analisis/${data.id}`);
+    } else {
+      pergi(`rekomendasi/${data.id}`);
+    }
   }
 
   // ======================================
@@ -1567,12 +1670,14 @@ export default function App() {
   // ======================================
 
   function masuk(email, password) {
+    const e = bersih(email);
+
     const admin =
-      email === "admin@findit.test" &&
+      e === "admin@findit.test" &&
       password === "admin123";
 
     const user =
-      email === "demo@findit.test" &&
+      e === "demo@findit.test" &&
       password === "demo123";
 
     if (!admin && !user) {
@@ -1581,50 +1686,64 @@ export default function App() {
     }
 
     setPengguna({
-      email,
-      nama: admin
-        ? "Admin FindIt"
-        : "Pengguna Demo",
+      email: e,
+      nama: admin ? "Admin FindIt" : "Pengguna Demo",
       role: admin ? "admin" : "user",
     });
 
     pergi(
-      admin ? "admin" : "laporan-saya"
+      admin ? "admin" : "beranda-pengguna"
     );
   }
 
   // ======================================
-  // REGISTRASI DEMO
+  // REGISTRASI
   // ======================================
 
   function registrasi(nama, email, nomorInduk) {
-    if (!nama || !email || !nomorInduk) {
-      alert("Lengkapi semua data pendaftaran.");
+    if (!nama || !email) {
+      alert("Nama dan email wajib diisi.");
       return;
     }
 
     setPengguna({
-      email,
       nama,
+      email: bersih(email),
       nomorInduk,
       role: "user",
     });
 
-    pergi("laporan-saya");
-  }
-
-  function keluar() {
-    setPengguna(null);
-    pergi("beranda");
+    pergi("beranda-pengguna");
   }
 
   // ======================================
-  // KLAIM BARANG
+  // LOGOUT
+  // ======================================
+
+  function keluar() {
+    setPengguna(null);
+
+    try {
+      sessionStorage.removeItem(
+        "findit_user_final_v1"
+      );
+    } catch {
+      console.warn("Gagal menghapus sesi.");
+    }
+
+    window.location.hash = "beranda";
+    setRute("beranda");
+    setMenuBuka(false);
+    window.scrollTo(0, 0);
+  }
+
+  // ======================================
+  // KIRIM KLAIM
   // ======================================
 
   function kirimKlaim(barangId, bukti) {
     const target = barang.find(
-      (x) => x.id === barangId
+      (b) => b.id === barangId
     );
 
     if (
@@ -1637,16 +1756,14 @@ export default function App() {
       return;
     }
 
-    const sedangDiproses = klaim.some(
-      (x) =>
-        x.barangId === barangId &&
-        x.status === "Menunggu"
-    );
-
-    if (sedangDiproses) {
-      alert(
-        "Barang ini sedang dalam verifikasi."
-      );
+    if (
+      klaim.some(
+        (x) =>
+          x.barangId === barangId &&
+          x.status === "Menunggu"
+      )
+    ) {
+      alert("Barang ini sedang diverifikasi.");
       return;
     }
 
@@ -1663,13 +1780,13 @@ export default function App() {
     ]);
 
     setBarang((lama) =>
-      lama.map((x) =>
-        x.id === barangId
+      lama.map((b) =>
+        b.id === barangId
           ? {
-              ...x,
+              ...b,
               status: "Dalam Verifikasi",
             }
-          : x
+          : b
       )
     );
 
@@ -1681,7 +1798,9 @@ export default function App() {
   // ======================================
 
   function verifikasiKlaim(id, disetujui) {
-    if (pengguna?.role !== "admin") return;
+    if (pengguna?.role !== "admin") {
+      return;
+    }
 
     const target = klaim.find(
       (x) =>
@@ -1714,49 +1833,171 @@ export default function App() {
     );
 
     setBarang((lama) =>
-      lama.map((x) =>
-        x.id === target.barangId
+      lama.map((b) =>
+        b.id === target.barangId
           ? {
-              ...x,
+              ...b,
               status: disetujui
                 ? "Dikembalikan"
                 : "Ditemukan",
             }
-          : x
+          : b
       )
     );
   }
 
-  function hapusLaporan(id) {
-    if (pengguna?.role !== "admin") return;
+  // ======================================
+  // HAPUS LAPORAN
+  // ======================================
 
+  function hapusLaporan(id) {
     if (
-      !window.confirm(
-        "Hapus laporan ini dari data demo?"
-      )
+      pengguna?.role !== "admin" ||
+      !window.confirm("Hapus laporan demo ini?")
     ) {
       return;
     }
 
     setBarang((lama) =>
-      lama.filter((x) => x.id !== id)
+      lama.filter((b) => b.id !== id)
     );
 
     setKlaim((lama) =>
-      lama.filter(
-        (x) => x.barangId !== id
-      )
+      lama.filter((x) => x.barangId !== id)
     );
   }
 
   // ======================================
-  // ROUTING
+  // NAVIGASI DARI KOMPONEN LAIN
   // ======================================
 
-  const [halaman, id] = rute.split("/");
+  function navigasiPengguna(tujuan, data) {
+    const route = String(tujuan || "")
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, "-");
+
+    const rawId =
+      typeof data === "object" && data !== null
+        ? data.id
+        : data;
+
+    const item =
+      barang.find(
+        (b) => b.id === String(rawId)
+      ) ||
+      barang.find(
+        (b) => b.id === `demo-${rawId}`
+      );
+
+    // Route lengkap dengan ID barang
+    if (
+      /^(detail|klaim|rekomendasi|proses-analisis)\/[\w-]+$/.test(
+        route
+      )
+    ) {
+      return pergi(route);
+    }
+
+    // Beranda pengguna
+    if (
+      [
+        "beranda",
+        "dashboard",
+        "beranda-pengguna",
+      ].includes(route)
+    ) {
+      return pergi(
+        pengguna?.role === "user"
+          ? "beranda-pengguna"
+          : "beranda"
+      );
+    }
+
+    // Cari barang
+    if (
+      ["cari", "cari-barang"].includes(route)
+    ) {
+      return cari(
+        typeof data === "string"
+          ? data
+          : data?.keyword || ""
+      );
+    }
+
+    // Detail / klaim / rekomendasi
+    if (
+      [
+        "detail",
+        "detail-barang",
+        "klaim",
+        "klaim-barang",
+        "rekomendasi",
+        "detail-laporan",
+      ].includes(route)
+    ) {
+      if (!item) {
+        return pergi("cari");
+      }
+
+      const namaRoute = route.startsWith("detail")
+        ? "detail"
+        : route.startsWith("klaim")
+          ? "klaim"
+          : "rekomendasi";
+
+      return pergi(`${namaRoute}/${item.id}`);
+    }
+
+    // Bantuan
+    if (
+      ["bantuan", "bantuan-klaim"].includes(route)
+    ) {
+      return pergi("bantuan-klaim");
+    }
+
+    // Logout
+    if (
+      ["logout", "keluar"].includes(route)
+    ) {
+      return keluar();
+    }
+
+    // Halaman lainnya
+    if (
+      [
+        "lapor-hilang",
+        "lapor-ditemukan",
+        "laporan-saya",
+        "profil-saya",
+        "privasi",
+        "masuk",
+        "daftar",
+      ].includes(route)
+    ) {
+      return pergi(route);
+    }
+
+    alert(
+      "Fitur ini belum tersedia pada prototype FindIt."
+    );
+  }
+
+  // ======================================
+  // INFORMASI ROUTE AKTIF
+  // ======================================
+
+  const [ruteHalaman, id] = rute.split("/");
+
+  const halaman =
+    ruteHalaman === "dashboard"
+      ? "beranda-pengguna"
+      : ruteHalaman === "cari-barang"
+        ? "cari"
+        : ruteHalaman;
 
   const detail = barang.find(
-    (x) => x.id === id
+    (b) => b.id === id
   );
 
   const navigasi = [
@@ -1767,7 +2008,12 @@ export default function App() {
   ];
 
   const halamanValid = [
-    ...navigasi.map((x) => x[0]),
+    "beranda",
+    "beranda-pengguna",
+    "cari",
+    "lapor-hilang",
+    "lapor-ditemukan",
+    "proses-analisis",
     "detail",
     "rekomendasi",
     "klaim",
@@ -1775,18 +2021,130 @@ export default function App() {
     "daftar",
     "laporan-saya",
     "admin",
+    "profil-saya",
+    "bantuan-klaim",
+    "privasi",
   ];
 
-  const halamanAuth = ["masuk", "daftar"].includes(
+  // ======================================
+  // HALAMAN CARI BARANG
+  // ======================================
+
+  if (halaman === "cari") {
+    return (
+      <CariBarang
+        items={barang}
+        keyword={kataCari}
+        user={pengguna}
+        onNavigate={navigasiPengguna}
+        onLogout={keluar}
+      />
+    );
+  }
+
+  // ======================================
+  // HALAMAN LAPOR HILANG
+  // ======================================
+
+  if (halaman === "lapor-hilang") {
+    return (
+      <LaporHilang
+        user={pengguna}
+        onNavigate={navigasiPengguna}
+        onLogout={keluar}
+        onSave={simpanLaporan}
+      />
+    );
+  }
+
+  // ======================================
+  // HALAMAN PROSES ANALISIS BARU
+  // ======================================
+
+  if (halaman === "proses-analisis") {
+    return (
+      <ProsesAnalisis
+        laporan={detail}
+        barang={barang}
+        pengguna={pengguna}
+        pergi={pergi}
+        keluar={keluar}
+      />
+    );
+  }
+
+  // ======================================
+  // BERANDA PENGGUNA
+  // ======================================
+
+  if (
+    pengguna?.role === "user" &&
+    ["beranda", "beranda-pengguna"].includes(
+      halaman
+    )
+  ) {
+    return (
+      <UserHome
+        userName={pengguna.nama || "Mahasiswa"}
+        userEmail={pengguna.email}
+        items={barang}
+        onNavigate={navigasiPengguna}
+        onLogout={keluar}
+      />
+    );
+  }
+
+  // ======================================
+  // BERANDA PENGGUNA BELUM LOGIN
+  // ======================================
+
+  if (
+    halaman === "beranda-pengguna" &&
+    !pengguna
+  ) {
+    return (
+      <AuthPage
+        daftar={false}
+        masuk={masuk}
+        registrasi={registrasi}
+        pergi={pergi}
+      />
+    );
+  }
+
+  // ======================================
+  // ADMIN
+  // ======================================
+
+  if (
+    halaman === "beranda-pengguna" &&
+    pengguna?.role === "admin"
+  ) {
+    return (
+      <Admin
+        pengguna={pengguna}
+        barang={barang}
+        klaim={klaim}
+        verifikasi={verifikasiKlaim}
+        hapus={hapusLaporan}
+        pergi={pergi}
+      />
+    );
+  }
+
+  // ======================================
+  // NAVBAR UMUM
+  // ======================================
+
+  const auth = ["masuk", "daftar"].includes(
     halaman
   );
 
   return (
     <>
-      {/* HEADER */}
       <header
         className={`site-header ${
-          halamanAuth ? "auth-site-header" : ""
+          auth ? "auth-site-header" : ""
         }`}
       >
         <div className="container navbar">
@@ -1814,7 +2172,9 @@ export default function App() {
               <button
                 key={route}
                 className={
-                  halaman === route ? "active" : ""
+                  halaman === route
+                    ? "active"
+                    : ""
                 }
                 onClick={() => pergi(route)}
               >
@@ -1826,6 +2186,16 @@ export default function App() {
           <div className="nav-right">
             {pengguna ? (
               <>
+                {pengguna.role === "user" && (
+                  <button
+                    onClick={() =>
+                      pergi("beranda-pengguna")
+                    }
+                  >
+                    Beranda Pengguna
+                  </button>
+                )}
+
                 <button
                   onClick={() =>
                     pergi("laporan-saya")
@@ -1878,8 +2248,13 @@ export default function App() {
         </div>
       </header>
 
-      {/* KONTEN HALAMAN */}
+      {/* ==================================
+          KONTEN HALAMAN UMUM
+      ================================== */}
+
       <main>
+        {/* BERANDA AWAL */}
+
         {halaman === "beranda" && (
           <Beranda
             barang={barang}
@@ -1888,23 +2263,7 @@ export default function App() {
           />
         )}
 
-        {halaman === "cari" && (
-          <HalamanCari
-            barang={barang}
-            keyword={kataCari}
-            pergi={pergi}
-          />
-        )}
-
-        {halaman === "lapor-hilang" && (
-          <FormLaporan
-            key="hilang"
-            tipe="HILANG"
-            pengguna={pengguna}
-            simpan={simpanLaporan}
-            pergi={pergi}
-          />
-        )}
+        {/* LAPOR DITEMUKAN */}
 
         {halaman === "lapor-ditemukan" && (
           <FormLaporan
@@ -1916,6 +2275,8 @@ export default function App() {
           />
         )}
 
+        {/* DETAIL BARANG */}
+
         {halaman === "detail" && (
           <DetailBarang
             barang={detail}
@@ -1924,13 +2285,17 @@ export default function App() {
           />
         )}
 
+        {/* REKOMENDASI */}
+
         {halaman === "rekomendasi" && (
-          <HalamanRekomendasi
+          <Rekomendasi
             acuan={detail}
             barang={barang}
             pergi={pergi}
           />
         )}
+
+        {/* KLAIM BARANG */}
 
         {halaman === "klaim" && (
           <HalamanKlaim
@@ -1941,9 +2306,9 @@ export default function App() {
           />
         )}
 
-        {/* LOGIN DAN DAFTAR BARU */}
-        {(halaman === "masuk" ||
-          halaman === "daftar") && (
+        {/* LOGIN DAN REGISTRASI */}
+
+        {auth && (
           <AuthPage
             daftar={halaman === "daftar"}
             masuk={masuk}
@@ -1951,6 +2316,8 @@ export default function App() {
             pergi={pergi}
           />
         )}
+
+        {/* LAPORAN SAYA */}
 
         {halaman === "laporan-saya" && (
           <LaporanSaya
@@ -1960,6 +2327,8 @@ export default function App() {
             pergi={pergi}
           />
         )}
+
+        {/* DASHBOARD ADMIN */}
 
         {halaman === "admin" && (
           <Admin
@@ -1972,14 +2341,40 @@ export default function App() {
           />
         )}
 
+        {/* HALAMAN INFORMASI */}
+
+        {[
+          "profil-saya",
+          "bantuan-klaim",
+          "privasi",
+        ].includes(halaman) && (
+          <HalamanInformasi
+            halaman={halaman}
+            pengguna={pengguna}
+            pergi={pergi}
+          />
+        )}
+
+        {/* HALAMAN TIDAK DITEMUKAN */}
+
         {!halamanValid.includes(halaman) && (
           <div className="container page">
             <h2>Halaman tidak ditemukan.</h2>
+
+            <button
+              className="btn btn-primary"
+              onClick={() => pergi("beranda")}
+            >
+              Kembali ke Beranda
+            </button>
           </div>
         )}
       </main>
 
-      {/* FOOTER */}
+      {/* ==================================
+          FOOTER
+      ================================== */}
+
       <footer className="site-footer">
         <div className="container">
           <span>
