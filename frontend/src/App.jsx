@@ -1,3 +1,4 @@
+﻿import AdminDashboard from "./AdminDashboard.jsx";
 
 import { useEffect, useState } from "react";
 
@@ -462,7 +463,7 @@ function Beranda({ barang, pergi, cari }) {
           <div className="section-heading row-heading">
             <div>
               <span className="eyebrow green">
-                ● PEMBARUAN BARANG
+                â— PEMBARUAN BARANG
               </span>
 
               <h2>Barang Terbaru Ditemukan</h2>
@@ -477,7 +478,7 @@ function Beranda({ barang, pergi, cari }) {
               className="link-button"
               onClick={() => cari("")}
             >
-              Lihat Semua Temuan →
+              Lihat Semua Temuan â†’
             </button>
           </div>
 
@@ -1028,7 +1029,7 @@ function Rekomendasi({ acuan, barang, pergi }) {
               <div>
                 <h3>{b.nama}</h3>
                 <p>
-                  {b.kategori} · {b.warna} · {b.lokasi}
+                  {b.kategori} Â· {b.warna} Â· {b.lokasi}
                 </p>
               </div>
 
@@ -1206,7 +1207,7 @@ function LaporanSaya({
                   {b.tipe === "HILANG"
                     ? "Hilang"
                     : "Ditemukan"}{" "}
-                  · {b.status}
+                  Â· {b.status}
                 </p>
               </div>
 
@@ -1380,7 +1381,7 @@ function Admin({
               <strong>{b.nama}</strong>
 
               <p>
-                {b.tipe} · {b.status}
+                {b.tipe} Â· {b.status}
               </p>
             </div>
 
@@ -2121,14 +2122,54 @@ export default function App() {
     pengguna?.role === "admin"
   ) {
     return (
-      <Admin
-        pengguna={pengguna}
-        barang={barang}
-        klaim={klaim}
-        verifikasi={verifikasiKlaim}
-        hapus={hapusLaporan}
-        pergi={pergi}
-      />
+      <AdminDashboard
+  user={pengguna}
+  pengguna={pengguna}
+  barang={barang}
+  klaim={klaim}
+  onNavigate={navigasiPengguna}
+  onLogout={keluar}
+  onVerifyClaim={verifikasiKlaim}
+  onVerifyReport={(laporanId, disetujui) => {
+    if (pengguna?.role !== "admin") {
+      throw new Error("Akses admin diperlukan.");
+    }
+
+    const target = barang.find(
+      (item) => String(item.id) === String(laporanId)
+    );
+
+    if (!target) {
+      throw new Error("Laporan tidak ditemukan.");
+    }
+
+    const next = barang.map((item) =>
+      String(item.id) === String(laporanId)
+        ? {
+            ...item,
+            statusVerifikasi: disetujui
+              ? "Terverifikasi"
+              : "Ditolak",
+            status: disetujui
+              ? item.tipe === "HILANG"
+                ? "Hilang"
+                : "Ditemukan"
+              : "Ditolak",
+            tanggalVerifikasi: new Date().toISOString(),
+          }
+        : item
+    );
+
+    localStorage.setItem(
+      "findit_barang_final_v1",
+      JSON.stringify(next)
+    );
+
+    setBarang(next);
+
+    return true;
+  }}
+/>
     );
   }
 
@@ -2331,14 +2372,54 @@ export default function App() {
         {/* DASHBOARD ADMIN */}
 
         {halaman === "admin" && (
-          <Admin
-            pengguna={pengguna}
-            barang={barang}
-            klaim={klaim}
-            verifikasi={verifikasiKlaim}
-            hapus={hapusLaporan}
-            pergi={pergi}
-          />
+          <AdminDashboard
+  user={pengguna}
+  pengguna={pengguna}
+  barang={barang}
+  klaim={klaim}
+  onNavigate={navigasiPengguna}
+  onLogout={keluar}
+  onVerifyClaim={verifikasiKlaim}
+  onVerifyReport={(laporanId, disetujui) => {
+    if (pengguna?.role !== "admin") {
+      throw new Error("Akses admin diperlukan.");
+    }
+
+    const target = barang.find(
+      (item) => String(item.id) === String(laporanId)
+    );
+
+    if (!target) {
+      throw new Error("Laporan tidak ditemukan.");
+    }
+
+    const next = barang.map((item) =>
+      String(item.id) === String(laporanId)
+        ? {
+            ...item,
+            statusVerifikasi: disetujui
+              ? "Terverifikasi"
+              : "Ditolak",
+            status: disetujui
+              ? item.tipe === "HILANG"
+                ? "Hilang"
+                : "Ditemukan"
+              : "Ditolak",
+            tanggalVerifikasi: new Date().toISOString(),
+          }
+        : item
+    );
+
+    localStorage.setItem(
+      "findit_barang_final_v1",
+      JSON.stringify(next)
+    );
+
+    setBarang(next);
+
+    return true;
+  }}
+/>
         )}
 
         {/* HALAMAN INFORMASI */}
@@ -2378,8 +2459,8 @@ export default function App() {
       <footer className="site-footer">
         <div className="container">
           <span>
-            🔎 <strong>FindIt</strong> © 2026
-            — Prototype Kampus
+            ðŸ”Ž <strong>FindIt</strong> Â© 2026
+            â€” Prototype Kampus
           </span>
 
           <span>Lost & Found Kampus</span>
@@ -2388,3 +2469,5 @@ export default function App() {
     </>
   );
 }
+
+

@@ -1,0 +1,849 @@
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Material+Symbols+Outlined&display=swap");
+
+/* ========================================
+   FINDIT - VERIFIKASI LAPORAN ADMIN
+======================================== */
+
+.vl-page {
+  --vl-blue: #2f64b0;
+  --vl-primary: #064b96;
+  --vl-text: #191c1e;
+  --vl-muted: #737782;
+  --vl-border: #e6e8ed;
+  --vl-background: #f5f7f9;
+
+  width: 100%;
+  min-width: 0;
+  min-height: 100%;
+  color: var(--vl-text);
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.vl-page *,
+.vl-page *::before,
+.vl-page *::after {
+  box-sizing: border-box;
+}
+
+.vl-page button,
+.vl-page input,
+.vl-page select {
+  font-family: inherit;
+}
+
+.vl-page button {
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.vl-page button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.vl-page .material-symbols-outlined {
+  font-family: "Material Symbols Outlined";
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  display: inline-block;
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-feature-settings: "liga";
+  -webkit-font-feature-settings: "liga";
+  -webkit-font-smoothing: antialiased;
+}
+
+/* JUDUL */
+
+.vl-heading {
+  margin-bottom: 26px;
+}
+
+.vl-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--vl-muted);
+  margin-bottom: 8px;
+}
+
+.vl-breadcrumb button {
+  background: transparent;
+  border: 0;
+  color: var(--vl-muted);
+  padding: 0;
+  font-size: 12px;
+}
+
+.vl-breadcrumb button:hover {
+  color: var(--vl-primary);
+}
+
+.vl-breadcrumb strong {
+  color: var(--vl-text);
+  font-weight: 600;
+}
+
+.vl-heading h1 {
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -1px;
+  margin: 0 0 6px;
+  line-height: 1.3;
+}
+
+.vl-heading p {
+  margin: 0;
+  color: #525967;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* FILTER STATUS */
+
+.vl-tabs {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  overflow-x: auto;
+  margin-bottom: 20px;
+  padding-bottom: 3px;
+  scrollbar-width: thin;
+}
+
+.vl-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  background: transparent;
+  color: #424751;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.vl-tab span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #e0e3e8;
+  color: #424751;
+  border-radius: 30px;
+  min-width: 24px;
+  padding: 3px 7px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.vl-tab:hover {
+  background: #e6e8ed;
+}
+
+.vl-tab.active {
+  background: var(--vl-blue);
+  color: white;
+  box-shadow: 0 2px 4px #2f64b015;
+}
+
+.vl-tab.active span {
+  background: #ffffff30;
+  color: white;
+}
+
+/* SEARCH BAR */
+
+.vl-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 16px;
+  background: #ffffff;
+  border: 1px solid #edf0f3;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 5px #17243e03;
+}
+
+.vl-search {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 160px;
+  min-height: 45px;
+  padding: 0 16px;
+  background: #f0f2f4;
+  color: #737782;
+  border: 1px solid transparent;
+  border-radius: 12px;
+}
+
+.vl-search:focus-within {
+  border-color: #9ab9e9;
+  background: white;
+}
+
+.vl-search input {
+  width: 100%;
+  min-width: 0;
+  padding: 12px 0;
+  margin: 0;
+  background: transparent;
+  border: 0;
+  outline: none;
+  color: #191c1e;
+  font-size: 13px;
+  box-shadow: none;
+}
+
+.vl-search input::placeholder {
+  color: #858b97;
+}
+
+.vl-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.vl-controls label {
+  color: #737782;
+  font-size: 12px;
+}
+
+.vl-controls select {
+  background: #f0f2f4;
+  border: 0;
+  border-radius: 10px;
+  padding: 12px;
+  min-height: 44px;
+  outline: none;
+  font-size: 12px;
+  color: #191c1e;
+  cursor: pointer;
+}
+
+.vl-result-count {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #737782;
+  font-size: 12px;
+  border-left: 1px solid #e6e8ea;
+  margin-left: 5px;
+  padding-left: 16px;
+  white-space: nowrap;
+}
+
+/* TABEL */
+
+.vl-table-card {
+  background: #ffffff;
+  border: 1px solid #e7ebf0;
+  border-radius: 13px;
+  overflow: hidden;
+  box-shadow: 0 2px 5px #17243e04;
+}
+
+.vl-table-scroll {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.vl-table {
+  width: 100%;
+  min-width: 870px;
+  border-collapse: collapse;
+  text-align: left;
+  margin: 0;
+}
+
+.vl-table thead {
+  background: #f0f2f4;
+}
+
+.vl-table th {
+  padding: 16px 13px;
+  color: #424751;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  white-space: normal;
+  border: 0;
+}
+
+.vl-table th:first-child {
+  width: 64px;
+  text-align: center;
+}
+
+.vl-table th:last-child {
+  text-align: right;
+  padding-right: 18px;
+}
+
+.vl-table td {
+  padding: 15px 13px;
+  border-bottom: 1px solid #eef0f3;
+  vertical-align: middle;
+  font-size: 13px;
+  background: transparent;
+}
+
+.vl-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.vl-table tbody tr:hover {
+  background: #fafbfc;
+}
+
+.vl-table td:last-child {
+  text-align: right;
+  padding-right: 18px;
+}
+
+.vl-photo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 9px;
+  background: #e6e8eb;
+  color: #68778a;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.vl-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.vl-item-name {
+  font-weight: 600;
+  color: #191c1e;
+  line-height: 1.45;
+  max-width: 175px;
+  overflow-wrap: anywhere;
+}
+
+.vl-report-id {
+  margin-top: 5px;
+  font-size: 10px;
+  color: #737782;
+  font-family: monospace;
+  letter-spacing: 0.2px;
+}
+
+.vl-reporter {
+  font-size: 12px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+  max-width: 175px;
+}
+
+.vl-location {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+  font-size: 11px;
+  color: #8290a2;
+  line-height: 1.5;
+}
+
+.vl-date {
+  white-space: nowrap;
+  font-size: 12px !important;
+}
+
+/* BADGE KECOCOKAN */
+
+.vl-match {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 9px;
+  border-radius: 30px;
+  background: #eceef0;
+  color: #737782;
+  font-size: 10px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.vl-match.has-match {
+  background: #d6e3ff;
+  color: #064b96;
+}
+
+/* BADGE STATUS */
+
+.vl-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border-radius: 30px;
+  padding: 5px 9px;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.vl-status.pending {
+  background: #fff1c5;
+  color: #a85d09;
+}
+
+.vl-status.approved {
+  background: #d6e3ff;
+  color: #064b96;
+}
+
+.vl-status.rejected {
+  background: #ffdad6;
+  color: #ba1a1a;
+}
+
+.vl-status.returned {
+  background: #d9f6e7;
+  color: #005837;
+}
+
+/* TOMBOL TINJAU */
+
+.vl-review {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 7px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: #e6e8ea;
+  color: #424751;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.vl-review.waiting {
+  background: #d0ddfd;
+  color: #064b96;
+}
+
+.vl-review:hover {
+  background: #2f64b0;
+  color: white;
+}
+
+/* PAGINATION */
+
+.vl-pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 16px;
+  color: #737782;
+  font-size: 12px;
+}
+
+.vl-pagination strong {
+  color: #191c1e;
+  font-weight: 600;
+}
+
+.vl-page-buttons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.vl-page-buttons button {
+  min-width: 32px;
+  min-height: 32px;
+  padding: 7px 11px;
+  border: 0;
+  border-radius: 8px;
+  background: #f0f2f4;
+  color: #424751;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.vl-page-buttons button:hover:not(:disabled) {
+  background: #dce5f5;
+}
+
+.vl-page-buttons button.active {
+  background: #2f64b0;
+  color: white;
+}
+
+/* KONDISI KOSONG */
+
+.vl-empty {
+  text-align: center;
+  padding: 55px 20px;
+}
+
+.vl-empty-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 75px;
+  height: 75px;
+  border-radius: 50%;
+  margin: 0 auto 18px;
+  background: #e7edfa;
+  color: #2f64b0;
+}
+
+.vl-empty h3 {
+  font-size: 17px;
+  margin: 0 0 8px;
+}
+
+.vl-empty p {
+  color: #737782;
+  font-size: 13px;
+  margin: 0 0 20px;
+}
+
+/* NOTIFIKASI */
+
+.vl-success {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #e1f6eb;
+  color: #005837;
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 18px;
+}
+
+.vl-success button {
+  margin-left: auto;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  color: #005837;
+}
+
+.vl-error {
+  background: #ffdad6;
+  color: #93000a;
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 16px;
+}
+
+/* MODAL TINJAU LAPORAN */
+
+.vl-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 27, 51, 0.55);
+  padding: 24px;
+  backdrop-filter: blur(3px);
+}
+
+.vl-modal {
+  width: 100%;
+  max-width: 650px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: white;
+  padding: 28px;
+  border-radius: 18px;
+  box-shadow: 0 20px 70px #00000030;
+}
+
+.vl-modal-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+.vl-modal-heading h2 {
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 23px;
+  margin: 0 0 6px;
+}
+
+.vl-modal-heading p {
+  color: #737782;
+  font-size: 12px;
+  margin: 0;
+}
+
+.vl-close {
+  background: #f0f2f4;
+  border: 0;
+  border-radius: 9px;
+  padding: 8px;
+  color: #525967;
+  display: flex;
+}
+
+.vl-modal-summary {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  background: #f5f7f9;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.vl-modal-summary .vl-photo {
+  width: 85px;
+  height: 85px;
+  border-radius: 12px;
+}
+
+.vl-modal-summary h3 {
+  margin: 0 0 10px;
+  font-size: 18px;
+}
+
+.vl-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-bottom: 22px;
+}
+
+.vl-detail-grid > div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.vl-detail-grid span {
+  color: #737782;
+  font-size: 12px;
+}
+
+.vl-detail-grid strong {
+  color: #191c1e;
+  font-weight: 600;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.vl-description {
+  border-top: 1px solid #e6e8ea;
+  padding-top: 18px;
+  margin-bottom: 22px;
+}
+
+.vl-description h4,
+.vl-matches-panel h4 {
+  font-size: 14px;
+  margin: 0 0 10px;
+}
+
+.vl-description p {
+  color: #525967;
+  line-height: 1.7;
+  font-size: 13px;
+  white-space: pre-wrap;
+  margin: 0;
+}
+
+.vl-matches-panel {
+  background: #edf3ff;
+  padding: 17px;
+  border-radius: 12px;
+}
+
+.vl-matches-panel h4 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #064b96;
+}
+
+.vl-matches-panel p {
+  font-size: 13px;
+  color: #525e79;
+  margin: 6px 0;
+}
+
+.vl-matches-panel small {
+  display: block;
+  color: #68778a;
+  line-height: 1.6;
+  font-size: 11px;
+  margin-top: 12px;
+}
+
+.vl-match-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid #dce5f5;
+}
+
+.vl-match-row strong {
+  font-size: 13px;
+}
+
+/* TOMBOL MODAL */
+
+.vl-modal-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 24px;
+}
+
+.vl-primary,
+.vl-secondary,
+.vl-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 12px 17px;
+  border: 0;
+  border-radius: 9px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.vl-primary {
+  background: #2f64b0;
+  color: white;
+}
+
+.vl-primary:hover:not(:disabled) {
+  background: #064b96;
+}
+
+.vl-secondary {
+  background: #edf0f3;
+  color: #424751;
+}
+
+.vl-danger {
+  background: #ffdad6;
+  color: #ba1a1a;
+}
+
+.vl-danger:hover:not(:disabled) {
+  background: #ba1a1a;
+  color: white;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 1200px) {
+  .vl-toolbar {
+    flex-wrap: wrap;
+  }
+
+  .vl-search {
+    min-width: 100%;
+  }
+
+  .vl-controls {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 768px) {
+  .vl-heading h1 {
+    font-size: 24px;
+  }
+
+  .vl-heading p {
+    font-size: 12px;
+  }
+
+  .vl-toolbar {
+    padding: 12px;
+  }
+
+  .vl-controls {
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .vl-result-count {
+    font-size: 11px;
+    padding-left: 8px;
+  }
+
+  .vl-pagination {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .vl-modal {
+    padding: 20px;
+  }
+
+  .vl-modal-overlay {
+    padding: 12px;
+  }
+
+  .vl-modal-actions {
+    justify-content: stretch;
+  }
+
+  .vl-modal-actions button {
+    flex: 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .vl-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .vl-tab {
+    font-size: 11px;
+    padding: 9px 12px;
+  }
+
+  .vl-modal-summary .vl-photo {
+    width: 65px;
+    height: 65px;
+  }
+}
