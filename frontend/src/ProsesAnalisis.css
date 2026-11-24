@@ -1,0 +1,838 @@
+
+/* =========================================
+   FINDIT - PROSES ANALISIS BARANG
+========================================= */
+
+.pa-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f7f9fb;
+  color: #191c1e;
+  font-family: Inter, Arial, sans-serif;
+  font-size: 14px;
+}
+
+.pa-page *,
+.pa-page *::before,
+.pa-page *::after {
+  box-sizing: border-box;
+}
+
+.pa-page button {
+  border: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+.pa-page .material-symbols-outlined {
+  font-family: "Material Symbols Outlined";
+  font-weight: normal;
+  font-style: normal;
+  font-size: 20px;
+  line-height: 1;
+  font-feature-settings: "liga";
+  vertical-align: middle;
+}
+
+/* =========================================
+   NAVBAR
+========================================= */
+
+.pa-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(255, 255, 255, 0.97);
+  border-bottom: 1px solid #edf0f4;
+  box-shadow: 0 2px 10px rgba(22, 35, 59, 0.04);
+  backdrop-filter: blur(12px);
+}
+
+.pa-navbar {
+  max-width: 1280px;
+  width: calc(100% - 48px);
+  min-height: 65px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.pa-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  background: transparent;
+  color: #16233b;
+  flex-shrink: 0;
+  text-align: left;
+}
+
+.pa-brand-icon {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  background: #2f64b0;
+  color: white;
+  border-radius: 8px;
+}
+
+.pa-brand strong {
+  display: block;
+  font-family: "Plus Jakarta Sans", Inter, sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.pa-brand small {
+  display: block;
+  color: #657084;
+  font-size: 9px;
+  margin-top: 3px;
+  letter-spacing: 0.3px;
+}
+
+.pa-links {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.pa-links button {
+  background: transparent;
+  padding: 10px 14px;
+  border-radius: 22px;
+  color: #424751;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.pa-links button:hover {
+  background: #f0f2f5;
+}
+
+.pa-links .pa-nav-active {
+  color: #2f64b0;
+  background: #eaf0fa;
+}
+
+/* PROFILE */
+
+.pa-profile {
+  position: relative;
+  margin-left: auto;
+}
+
+.pa-profile-button {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 5px 9px 5px 5px;
+  background: #f3f5f8;
+  border-radius: 30px;
+  color: #252c38;
+  white-space: nowrap;
+}
+
+.pa-avatar {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  background: #2f64b0;
+  color: white;
+  border-radius: 50%;
+}
+
+.pa-profile-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  min-width: 180px;
+  padding: 6px;
+  border-radius: 12px;
+  background: white;
+  border: 1px solid #e8ecf2;
+  box-shadow: 0 12px 30px #16233b22;
+}
+
+.pa-profile-menu button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px;
+  background: transparent;
+  border-radius: 8px;
+  color: #263247;
+  text-align: left;
+}
+
+.pa-profile-menu button:hover {
+  background: #edf2fb;
+}
+
+/* =========================================
+   MAIN
+========================================= */
+
+.pa-main {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 36px 20px 56px;
+}
+
+.pa-content {
+  width: 100%;
+  max-width: 640px;
+}
+
+.pa-report-id {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 14px;
+  color: #424751;
+  font-size: 12px;
+}
+
+.pa-report-id .material-symbols-outlined {
+  color: #007349;
+  font-size: 16px;
+}
+
+.pa-report-id strong {
+  font-weight: 700;
+  color: #191c1e;
+}
+
+/* =========================================
+   WHITE CARD
+========================================= */
+
+.pa-card {
+  background: #ffffff;
+  border-radius: 15px;
+  padding: 37px 38px 33px;
+  box-shadow:
+    0 5px 28px rgba(22, 35, 59, 0.05),
+    0 1px 5px rgba(22, 35, 59, 0.025);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* =========================================
+   ANIMASI ANALISIS
+========================================= */
+
+.pa-animation {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 5px 0 25px;
+}
+
+.pa-icon-outer {
+  position: relative;
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #2f64b0;
+  background: #d6e3ff;
+  box-shadow: 0 0 0 9px #edf3ff;
+}
+
+.pa-icon-outer > .material-symbols-outlined {
+  position: relative;
+  z-index: 2;
+  font-size: 29px;
+}
+
+.pa-spin-ring {
+  position: absolute;
+  inset: 5px;
+  border: 3px solid #aac7ff;
+  border-top-color: #2f64b0;
+  border-right-color: #2f64b0;
+  border-radius: 50%;
+  animation: pa-spin 1.5s linear infinite;
+}
+
+.pa-icon-finished {
+  background: #d5f8e3;
+  color: #007349;
+  box-shadow: 0 0 0 9px #ebfbf1;
+}
+
+@keyframes pa-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* =========================================
+   JUDUL
+========================================= */
+
+.pa-heading {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.pa-heading h1 {
+  margin: 0 0 8px;
+  color: #191c1e;
+  font-family: "Plus Jakarta Sans", Inter, sans-serif;
+  font-size: 25px;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: -0.6px;
+}
+
+.pa-heading p {
+  margin: 0 auto;
+  max-width: 475px;
+  color: #596472;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+/* =========================================
+   RINGKASAN LAPORAN
+========================================= */
+
+.pa-summary {
+  width: 100%;
+  padding: 17px;
+  margin-bottom: 32px;
+  background: #f1f3f6;
+  border-radius: 12px;
+}
+
+.pa-summary-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 13px;
+}
+
+.pa-summary-header > span:first-child {
+  color: #657084;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+}
+
+.pa-category {
+  max-width: 55%;
+  border-radius: 999px;
+  padding: 5px 10px;
+  color: #2f64b0;
+  background: #e0eaff;
+  font-size: 10px;
+  font-weight: 600;
+  text-align: right;
+}
+
+.pa-summary-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+}
+
+.pa-item-icon {
+  flex-shrink: 0;
+  width: 47px;
+  height: 47px;
+  display: grid;
+  place-items: center;
+  background: white;
+  color: #2f64b0;
+  border-radius: 10px;
+}
+
+.pa-item-icon .material-symbols-outlined {
+  font-size: 25px;
+}
+
+.pa-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.pa-item-info h2 {
+  margin: 0 0 6px;
+  color: #16233b;
+  font-family: "Plus Jakarta Sans", Inter, sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.pa-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.pa-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #697483;
+  font-size: 11px;
+}
+
+.pa-meta .material-symbols-outlined {
+  font-size: 15px;
+}
+
+/* =========================================
+   TAHAP PROSES
+========================================= */
+
+.pa-steps {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 25px;
+}
+
+.pa-step {
+  display: flex;
+  align-items: stretch;
+  gap: 15px;
+}
+
+.pa-step-indicator {
+  width: 34px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.pa-step-circle {
+  width: 31px;
+  height: 31px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.pa-step-done {
+  background: #8df8bd;
+  color: #005837;
+}
+
+.pa-step-done .material-symbols-outlined {
+  font-size: 19px;
+}
+
+.pa-step-active {
+  background: #2f64b0;
+  color: white;
+  box-shadow: 0 0 0 4px #dbe7fb;
+}
+
+.pa-step-pending {
+  background: #e6e8ea;
+  color: #737782;
+}
+
+.pa-mini-spinner {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 2px solid #ffffff66;
+  border-top-color: white;
+  animation: pa-spin 0.85s linear infinite;
+}
+
+.pa-step-line {
+  width: 2px;
+  min-height: 45px;
+  flex: 1;
+  margin: 5px 0;
+  background: #e0e3e5;
+}
+
+.pa-line-done {
+  background: #a8efc5;
+}
+
+.pa-step-content {
+  flex: 1;
+  min-width: 0;
+  padding: 3px 0 24px;
+}
+
+.pa-step-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 5px;
+}
+
+.pa-step-heading h3 {
+  margin: 0;
+  font-family: "Plus Jakarta Sans", Inter, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #20242d;
+  line-height: 1.5;
+}
+
+.pa-step-heading h3.pa-blue-text {
+  color: #2f64b0;
+}
+
+.pa-step-content p {
+  margin: 0;
+  color: #6d7785;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.pa-step-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.pa-badge-done {
+  background: #dcf9e9;
+  color: #005837;
+}
+
+.pa-badge-active {
+  background: #d6e3ff;
+  color: #064b96;
+}
+
+.pa-badge-wait {
+  background: #eceef0;
+  color: #657084;
+}
+
+.pa-small-dot {
+  width: 6px;
+  height: 6px;
+  background: #2f64b0;
+  border-radius: 50%;
+  animation: pa-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pa-pulse {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+/* =========================================
+   INFO
+========================================= */
+
+.pa-info-box {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 15px;
+  border-radius: 11px;
+  background: #eef3ff;
+  margin-bottom: 26px;
+}
+
+.pa-info-box > .material-symbols-outlined {
+  color: #2f64b0;
+  font-size: 19px;
+  flex-shrink: 0;
+}
+
+.pa-info-box p {
+  margin: 0;
+  color: #485a7a;
+  font-size: 11px;
+  line-height: 1.65;
+}
+
+.pa-info-box strong {
+  color: #16233b;
+}
+
+/* =========================================
+   TOMBOL
+========================================= */
+
+.pa-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  width: 100%;
+}
+
+.pa-primary-button,
+.pa-secondary-button,
+.pa-text-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 41px;
+  padding: 10px 17px;
+  border-radius: 10px;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+}
+
+.pa-primary-button {
+  background: #2f64b0;
+  color: white;
+}
+
+.pa-primary-button:hover {
+  background: #064b96;
+}
+
+.pa-secondary-button {
+  color: #273142;
+  background: #e6e8ea;
+}
+
+.pa-secondary-button:hover {
+  background: #d6e3ff;
+}
+
+.pa-text-button {
+  background: transparent;
+  color: #424751;
+}
+
+.pa-text-button:hover {
+  color: #2f64b0;
+  background: #f1f3f6;
+}
+
+.pa-actions .material-symbols-outlined {
+  font-size: 17px;
+}
+
+/* =========================================
+   HALAMAN ERROR
+========================================= */
+
+.pa-error-page {
+  margin: auto;
+  width: min(500px, calc(100% - 36px));
+  padding: 40px 25px;
+  background: white;
+  border-radius: 14px;
+  text-align: center;
+}
+
+.pa-error-page > .material-symbols-outlined {
+  color: #2f64b0;
+  font-size: 45px;
+}
+
+.pa-error-page h2 {
+  margin: 14px 0 8px;
+}
+
+.pa-error-page p {
+  color: #657084;
+  line-height: 1.6;
+}
+
+.pa-error-page .pa-primary-button {
+  margin-top: 15px;
+}
+
+/* =========================================
+   FOOTER
+========================================= */
+
+.pa-footer {
+  background: #f1f3f6;
+  border-top: 1px solid #e6eaf0;
+}
+
+.pa-footer-inner {
+  max-width: 1280px;
+  width: calc(100% - 48px);
+  margin: auto;
+  min-height: 66px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.pa-footer-inner > span {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #657084;
+  font-size: 12px;
+}
+
+.pa-footer-logo {
+  width: 25px;
+  height: 25px;
+  border-radius: 6px;
+  background: #2f64b0;
+  color: white;
+  display: grid;
+  place-items: center;
+}
+
+.pa-footer-logo .material-symbols-outlined {
+  font-size: 16px;
+}
+
+.pa-footer-inner > div {
+  display: flex;
+  align-items: center;
+  gap: 23px;
+}
+
+.pa-footer-inner button {
+  background: transparent;
+  color: #657084;
+  font-size: 12px;
+}
+
+.pa-footer-inner button:hover {
+  color: #2f64b0;
+}
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 900px) {
+  .pa-navbar {
+    gap: 14px;
+  }
+
+  .pa-links {
+    gap: 0;
+  }
+
+  .pa-links button {
+    padding: 9px;
+  }
+
+  .pa-profile-name {
+    display: none;
+  }
+}
+
+@media (max-width: 680px) {
+  .pa-navbar {
+    flex-wrap: wrap;
+    padding: 10px 0;
+  }
+
+  .pa-links {
+    order: 3;
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .pa-links button {
+    padding: 8px 12px;
+  }
+
+  .pa-main {
+    padding: 25px 14px 40px;
+  }
+
+  .pa-card {
+    padding: 26px 19px;
+  }
+
+  .pa-heading h1 {
+    font-size: 21px;
+  }
+
+  .pa-heading p {
+    font-size: 12px;
+  }
+
+  .pa-step-heading {
+    align-items: flex-start;
+  }
+
+  .pa-actions {
+    flex-direction: column;
+  }
+
+  .pa-actions button {
+    width: 100%;
+  }
+
+  .pa-footer-inner {
+    flex-direction: column;
+    padding: 18px 0;
+  }
+}
+
+@media (max-width: 400px) {
+  .pa-summary-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .pa-category {
+    max-width: 100%;
+    text-align: left;
+  }
+
+  .pa-card {
+    padding: 23px 15px;
+  }
+
+  .pa-step {
+    gap: 9px;
+  }
+
+  .pa-step-heading h3 {
+    font-size: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pa-spin-ring,
+  .pa-mini-spinner,
+  .pa-small-dot {
+    animation: none;
+  }
+}

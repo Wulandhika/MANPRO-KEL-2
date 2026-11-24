@@ -1,0 +1,770 @@
+
+/* =========================================
+   FINDIT - LAPOR BARANG HILANG
+   React JS + CSS
+========================================= */
+
+.lh-page {
+  min-height: 100vh;
+  background: #f7f9fb;
+  color: #191c1e;
+  font-family: Inter, Arial, sans-serif;
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+}
+
+.lh-page *,
+.lh-page *::before,
+.lh-page *::after {
+  box-sizing: border-box;
+}
+
+.lh-page button,
+.lh-page input,
+.lh-page select,
+.lh-page textarea {
+  font: inherit;
+}
+
+.lh-page button {
+  cursor: pointer;
+  border: 0;
+}
+
+.lh-page .material-symbols-outlined {
+  font-family: "Material Symbols Outlined";
+  font-size: 20px;
+  line-height: 1;
+  vertical-align: middle;
+  font-weight: normal;
+  font-style: normal;
+  font-feature-settings: "liga";
+}
+
+/* =========================================
+   NAVBAR
+========================================= */
+
+.lh-header {
+  background: #ffffff;
+  border-bottom: 1px solid #eef0f4;
+  box-shadow: 0 2px 10px #1a2c4410;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+
+.lh-nav {
+  width: min(1280px, calc(100% - 40px));
+  margin: auto;
+  min-height: 66px;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.lh-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  color: #16233b;
+  padding: 0;
+  text-align: left;
+  flex-shrink: 0;
+}
+
+.lh-brand-icon {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: #2f64b0;
+  color: #ffffff;
+}
+
+.lh-brand strong {
+  display: block;
+  font: 800 18px/1.1 "Plus Jakarta Sans", Inter, sans-serif;
+}
+
+.lh-brand small {
+  display: block;
+  margin-top: 3px;
+  font-size: 9px;
+  color: #67748a;
+  letter-spacing: .3px;
+}
+
+.lh-links {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.lh-links button {
+  padding: 10px 14px;
+  border-radius: 22px;
+  background: transparent;
+  color: #424751;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.lh-links button:hover {
+  background: #f1f4f9;
+}
+
+.lh-links .lh-active {
+  background: #dce8f8;
+  color: #2f64b0;
+}
+
+/* PROFIL */
+
+.lh-profile {
+  position: relative;
+  margin-left: auto;
+}
+
+.lh-profile-button {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: #f4f6f9;
+  color: #252c38;
+  padding: 4px 9px 4px 4px;
+  border-radius: 30px;
+  white-space: nowrap;
+}
+
+.lh-avatar {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  color: #ffffff;
+  background: #2f64b0;
+  border-radius: 50%;
+}
+
+.lh-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 175px;
+  background: white;
+  border: 1px solid #e9edf3;
+  box-shadow: 0 12px 30px #192a4423;
+  border-radius: 10px;
+  padding: 6px;
+}
+
+.lh-dropdown button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px;
+  width: 100%;
+  border-radius: 6px;
+  background: transparent;
+  text-align: left;
+  color: #22334a;
+}
+
+.lh-dropdown button:hover {
+  background: #edf2fb;
+}
+
+.lh-login {
+  margin-left: auto;
+  padding: 9px 19px;
+  border-radius: 9px;
+  background: #2f64b0;
+  color: white;
+  font-weight: 700 !important;
+}
+
+/* =========================================
+   KONTEN HALAMAN
+========================================= */
+
+.lh-main {
+  flex: 1;
+  width: min(1000px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 25px 0 62px;
+}
+
+.lh-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 22px;
+  color: #5b6372;
+  font-size: 12px;
+}
+
+.lh-breadcrumb button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #677181;
+  background: none;
+  padding: 0;
+}
+
+.lh-breadcrumb .material-symbols-outlined {
+  font-size: 15px;
+}
+
+/* LAYOUT FORM DAN SIDEBAR */
+
+.lh-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2.08fr) minmax(245px, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.lh-form-card {
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 2px 14px #16233b10;
+  padding: 31px;
+  min-width: 0;
+}
+
+.lh-form-card h1 {
+  font: 700 26px/1.3 "Plus Jakarta Sans", Inter, sans-serif;
+  letter-spacing: -.8px;
+  margin: 0 0 8px;
+}
+
+.lh-intro {
+  color: #596472;
+  line-height: 1.6;
+  font-size: 13px;
+  margin: 0 0 28px;
+}
+
+/* =========================================
+   FORMULIR
+========================================= */
+
+.lh-form {
+  display: flex;
+  flex-direction: column;
+  gap: 21px;
+}
+
+.lh-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  color: #20262e;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.lh-field > span b,
+.lh-label-row b {
+  color: #ba1a1a;
+}
+
+.lh-field input:not([type="file"]),
+.lh-field select,
+.lh-field textarea {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  border: 1px solid #edf0f4;
+  border-radius: 11px;
+  padding: 12px 13px;
+  background: #ffffff;
+  box-shadow: 0 1px 4px #17243b0c;
+  color: #202a38;
+  font-weight: 400;
+  font-size: 13px;
+  outline: none;
+}
+
+.lh-field input:not([type="file"]),
+.lh-field select {
+  min-height: 46px;
+}
+
+.lh-field textarea {
+  min-height: 100px;
+  resize: vertical;
+  line-height: 1.55;
+}
+
+.lh-field input:focus,
+.lh-field select:focus,
+.lh-field textarea:focus {
+  border-color: #2f64b0;
+  box-shadow: 0 0 0 3px #2f64b024;
+}
+
+.lh-field input::placeholder,
+.lh-field textarea::placeholder {
+  color: #727b86;
+  opacity: 1;
+}
+
+.lh-two-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.lh-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.lh-label-row small,
+.lh-hint {
+  font-size: 11px;
+  font-weight: 400;
+  color: #7b8592;
+}
+
+.lh-label-row small {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  text-align: right;
+}
+
+.lh-label-row small .material-symbols-outlined {
+  font-size: 14px;
+}
+
+.lh-field .lh-hint {
+  line-height: 1.45;
+  color: #677181;
+}
+
+/* =========================================
+   UPLOAD FOTO
+========================================= */
+
+.lh-dropzone {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 155px;
+  padding: 20px;
+  border-radius: 12px;
+  background: #f3f5f7;
+  text-align: center;
+  cursor: pointer;
+  transition: background .2s;
+}
+
+.lh-dropzone:hover {
+  background: #e9f0fb;
+}
+
+.lh-dropzone input[type="file"] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.lh-upload-icon {
+  display: grid;
+  place-items: center;
+  width: 47px;
+  height: 47px;
+  margin-bottom: 6px;
+  border-radius: 50%;
+  color: #2f64b0;
+  background: white;
+  box-shadow: 0 1px 4px #16233b15;
+}
+
+.lh-upload-icon .material-symbols-outlined {
+  font-size: 27px;
+}
+
+.lh-dropzone strong {
+  font-size: 13px;
+  font-weight: 600;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.lh-dropzone small {
+  max-width: 365px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #66707c;
+  font-weight: 400;
+}
+
+.lh-preview {
+  width: auto;
+  max-width: 100%;
+  height: 95px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.lh-file-loaded {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  color: #067747;
+  font-size: 11px;
+}
+
+.lh-file-loaded .material-symbols-outlined {
+  font-size: 15px;
+}
+
+.lh-remove-photo {
+  align-self: flex-start;
+  padding: 4px 0;
+  color: #ba1a1a;
+  background: transparent;
+  font-size: 11px !important;
+}
+
+/* =========================================
+   INFORMASI DAN VALIDASI
+========================================= */
+
+.lh-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 11px;
+  background: #f1f3f5;
+  color: #626d7a;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.lh-notice .material-symbols-outlined {
+  color: #2f64b0;
+  flex-shrink: 0;
+}
+
+.lh-login-notice {
+  margin-bottom: 20px;
+  align-items: center;
+}
+
+.lh-login-notice button {
+  background: #2f64b0;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 7px;
+  margin-left: auto;
+}
+
+.lh-error {
+  margin: 0;
+  border-radius: 9px;
+  background: #fff0ed;
+  color: #a11d1d;
+  padding: 12px;
+  font-size: 12px;
+}
+
+/* =========================================
+   TOMBOL KIRIM DAN BATAL
+========================================= */
+
+.lh-submit {
+  width: 100%;
+  min-height: 47px;
+  border-radius: 10px;
+  background: #2f64b0;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 8px #2f64b032;
+}
+
+.lh-submit:hover {
+  background: #245396;
+}
+
+.lh-submit:disabled {
+  opacity: .6;
+  cursor: wait;
+}
+
+.lh-cancel {
+  background: transparent;
+  color: #58657a;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px !important;
+  padding: 0 8px 4px;
+}
+
+.lh-cancel .material-symbols-outlined {
+  font-size: 17px;
+}
+
+/* =========================================
+   SIDEBAR TIPS
+========================================= */
+
+.lh-tips {
+  position: sticky;
+  top: 87px;
+  background: #eff3f9;
+  border-radius: 14px;
+  box-shadow: 0 2px 10px #16233b0b;
+  padding: 24px 23px 0;
+  overflow: hidden;
+}
+
+.lh-tips-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.lh-tips-header > span {
+  background: #ffffff;
+  color: #2f64b0;
+  width: 33px;
+  height: 33px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+}
+
+.lh-tips-header h2 {
+  margin: 0;
+  font: 700 16px/1.35 "Plus Jakarta Sans", Inter, sans-serif;
+}
+
+.lh-tip {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.lh-tip > b {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #dce8fb;
+  color: #2f64b0;
+  font-size: 12px;
+}
+
+.lh-tip h3 {
+  margin: 0 0 5px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.lh-tip p {
+  margin: 0;
+  color: #677181;
+  font-size: 11px;
+  line-height: 1.65;
+}
+
+.lh-privacy {
+  display: flex;
+  gap: 10px;
+  margin: 10px -23px 0;
+  padding: 18px 23px;
+  background: #ffffffc9;
+}
+
+.lh-privacy .material-symbols-outlined {
+  font-size: 18px;
+  color: #007349;
+  flex-shrink: 0;
+}
+
+.lh-privacy p {
+  margin: 0;
+  color: #677181;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+/* =========================================
+   FOOTER
+========================================= */
+
+.lh-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 20px max(20px, calc((100vw - 1280px) / 2));
+  background: #f1f3f6;
+  color: #697483;
+  font-size: 12px;
+}
+
+.lh-footer > span {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.lh-footer-logo {
+  display: grid;
+  place-items: center;
+  width: 25px;
+  height: 25px;
+  border-radius: 6px;
+  color: white;
+  background: #2f64b0;
+}
+
+.lh-footer-logo .material-symbols-outlined {
+  font-size: 16px;
+}
+
+.lh-footer > div {
+  display: flex;
+  gap: 23px;
+}
+
+.lh-footer button {
+  background: transparent;
+  color: #536071;
+  padding: 0;
+}
+
+/* =========================================
+   RESPONSIVE TABLET
+========================================= */
+
+@media (max-width: 850px) {
+  .lh-nav {
+    gap: 14px;
+  }
+
+  .lh-links {
+    gap: 0;
+  }
+
+  .lh-links button {
+    padding: 8px;
+  }
+
+  .lh-layout {
+    grid-template-columns: minmax(0, 1fr) 255px;
+    gap: 15px;
+  }
+
+  .lh-form-card {
+    padding: 22px;
+  }
+
+  .lh-tips {
+    padding: 18px 16px 0;
+  }
+
+  .lh-privacy {
+    margin: 10px -16px 0;
+    padding: 16px;
+  }
+
+  .lh-profile-button > span:nth-child(2) {
+    display: none;
+  }
+}
+
+/* =========================================
+   RESPONSIVE MOBILE
+========================================= */
+
+@media (max-width: 690px) {
+  .lh-nav {
+    flex-wrap: wrap;
+    padding: 10px 0;
+  }
+
+  .lh-links {
+    order: 3;
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .lh-links button {
+    padding: 8px 12px;
+  }
+
+  .lh-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .lh-tips {
+    position: static;
+  }
+
+  .lh-main {
+    padding-top: 18px;
+  }
+
+  .lh-form-card h1 {
+    font-size: 23px;
+  }
+
+  .lh-footer {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 450px) {
+  .lh-two-cols {
+    grid-template-columns: 1fr;
+  }
+
+  .lh-main,
+  .lh-nav {
+    width: calc(100% - 28px);
+  }
+
+  .lh-form-card {
+    padding: 18px;
+  }
+
+  .lh-label-row {
+    align-items: flex-start;
+  }
+
+  .lh-label-row small {
+    font-size: 10px;
+  }
+}
