@@ -1,16 +1,29 @@
 const bcrypt = require("bcryptjs");
 const User = require("../models/userModel");
 
-// Melihat profil pengguna
+const {
+    isValidName,
+    isValidPassword
+} = require("./authController");
+
+const fail = (res, status, message) => {
+    return res.status(status).json({
+        success: false,
+        message
+    });
+};
+
+// Melihat profil
 const getProfile = async (req, res, next) => {
     try {
         const user = await User.findById(req.user.id);
 
         if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "Pengguna tidak ditemukan"
-            });
+            return fail(
+                res,
+                404,
+                "Pengguna tidak ditemukan"
+            );
         }
 
         return res.status(200).json({
@@ -20,29 +33,28 @@ const getProfile = async (req, res, next) => {
                 id: user.id,
                 name: user.name,
                 email: user.email,
+                nim_nip: user.nim_nip,
                 role: user.role,
                 created_at: user.created_at
             }
         });
+
     } catch (error) {
         next(error);
     }
 };
 
-// Mengubah profil pengguna
+// Memperbarui profil
 const updateProfile = async (req, res, next) => {
     try {
-        const { name } = req.body;
+        const { name } = req.body || {};
 
-        if (
-            typeof name !== "string" ||
-            !name.trim() ||
-            name.trim().length > 100
-        ) {
-            return res.status(400).json({
-                success: false,
-                message: "Nama harus berisi 1-100 karakter"
-            });
+        if (!isValidName(name)) {
+            return fail(
+                res,
+                400,
+                "Nama harus 3-100 karakter tanpa angka atau simbol sembarangan"
+            );
         }
 
         const user = await User.updateProfile(
@@ -51,10 +63,11 @@ const updateProfile = async (req, res, next) => {
         );
 
         if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "Pengguna tidak ditemukan"
-            });
+            return fail(
+                res,
+                404,
+                "Pengguna tidak ditemukan"
+            );
         }
 
         return res.status(200).json({
@@ -62,44 +75,53 @@ const updateProfile = async (req, res, next) => {
             message: "Profil berhasil diperbarui",
             data: user
         });
+
     } catch (error) {
         next(error);
     }
 };
 
-// Mengubah password pengguna
+// Mengubah password
 const changePassword = async (req, res, next) => {
     try {
-        const { oldPassword, newPassword } = req.body;
+        const {
+            oldPassword,
+            newPassword
+        } = req.body || {};
 
         if (
             typeof oldPassword !== "string" ||
-            typeof newPassword !== "string" ||
-            !oldPassword
+            !oldPassword ||
+            Buffer.byteLength(oldPassword, "utf8") > 72
         ) {
-            return res.status(400).json({
-                success: false,
-                message: "Password lama dan baru wajib diisi"
-            });
+            return fail(
+                res,
+                400,
+                "Password lama wajib diisi"
+            );
         }
+
+        if (!isValidPassword(newPassword)) {
+            return fail(
+                res,
+                400,
+                "Password baru minimal 8 karakter dan maksimal 72 byte"
+            );
+        }
+
+        const user = await User.findByEmail(
+            req.user.email
+        );
 
         if (
-            newPassword.length < 8 ||
-            Buffer.byteLength(newPassword, "utf8") > 72
+            !user ||
+            String(user.id) !== String(req.user.id)
         ) {
-            return res.status(400).json({
-                success: false,
-                message: "Password minimal 8 karakter dan maksimal 72 byte"
-            });
-        }
-
-        const user = await User.findByEmail(req.user.email);
-
-        if (!user || String(user.id) !== String(req.user.id)) {
-            return res.status(404).json({
-                success: false,
-                message: "Pengguna tidak ditemukan"
-            });
+            return fail(
+                res,
+                404,
+                "Pengguna tidak ditemukan"
+            );
         }
 
         const isMatch = await bcrypt.compare(
@@ -108,10 +130,19 @@ const changePassword = async (req, res, next) => {
         );
 
         if (!isMatch) {
-            return res.status(400).json({
-                success: false,
-                message: "Password lama tidak sesuai"
-            });
+            return fail(
+                res,
+                400,
+                "Password lama tidak sesuai"
+            );
+        }
+
+        if (oldPassword === newPassword) {
+            return fail(
+                res,
+                400,
+                "Password baru harus berbeda dari password lama"
+            );
         }
 
         const hashedPassword = await bcrypt.hash(
@@ -128,6 +159,7 @@ const changePassword = async (req, res, next) => {
             success: true,
             message: "Password berhasil diubah"
         });
+
     } catch (error) {
         next(error);
     }

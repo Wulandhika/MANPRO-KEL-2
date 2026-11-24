@@ -1,4 +1,13 @@
+
 const Report = require("../models/reportModel");
+
+const {
+    processReportMatching
+} = require("../services/matchingService");
+
+// ==================================================
+// FINDIT - REPORT CONTROLLER
+// ==================================================
 
 // Validasi data laporan
 const validateReport = (body = {}) => {
@@ -14,32 +23,78 @@ const validateReport = (body = {}) => {
         "time_range"
     ];
 
-    return required.every(
+    const valid = required.every(
         (field) =>
             typeof body[field] === "string" &&
             body[field].trim().length > 0
     );
+
+    if (!valid) {
+        return false;
+    }
+
+    return Number.isFinite(
+        new Date(body.lost_date).getTime()
+    );
 };
 
-// Membuat laporan kehilangan
+// ==================================================
+// MENJALANKAN AI MATCHING
+// ==================================================
+
+const runMatching = async (report) => {
+    try {
+        return await processReportMatching(report);
+
+    } catch (error) {
+        console.error(
+            "[REPORT AI ERROR]",
+            error.message
+        );
+
+        // Laporan tetap berhasil dibuat meskipun
+        // proses penyimpanan rekomendasi gagal.
+        return {
+            success: false,
+            status: "failed",
+            report_id: report.id,
+            message: "Laporan tersimpan, tetapi pencocokan AI gagal",
+            total_candidates: null,
+            total_matches: null,
+            recommendations: []
+        };
+    }
+};
+
+// ==================================================
+// MEMBUAT LAPORAN KEHILANGAN
+// ==================================================
+
 const createReport = async (req, res, next) => {
     try {
         if (!validateReport(req.body)) {
             return res.status(400).json({
                 success: false,
-                message: "Lengkapi semua data wajib"
+                message: "Lengkapi semua data wajib dan gunakan tanggal yang valid"
             });
         }
 
+        // Menyimpan laporan ke database
         const report = await Report.create({
             ...req.body,
             user_id: req.user.id
         });
 
+        // Menjalankan AI setelah laporan dibuat
+        const matching = await runMatching(report);
+
         return res.status(201).json({
             success: true,
-            message: "Laporan kehilangan berhasil dibuat",
-            data: report
+            message: matching.success
+                ? "Laporan kehilangan berhasil dibuat"
+                : "Laporan berhasil dibuat, tetapi pencocokan AI gagal",
+            data: report,
+            matching
         });
 
     } catch (error) {
@@ -47,7 +102,10 @@ const createReport = async (req, res, next) => {
     }
 };
 
-// Melihat semua laporan milik pengguna
+// ==================================================
+// MELIHAT SEMUA LAPORAN MILIK PENGGUNA
+// ==================================================
+
 const getMyReports = async (req, res, next) => {
     try {
         const reports = await Report.findByUserId(
@@ -65,7 +123,10 @@ const getMyReports = async (req, res, next) => {
     }
 };
 
-// Melihat detail laporan
+// ==================================================
+// MELIHAT DETAIL LAPORAN
+// ==================================================
+
 const getReportDetail = async (req, res, next) => {
     try {
         const report = await Report.findById(
@@ -90,13 +151,16 @@ const getReportDetail = async (req, res, next) => {
     }
 };
 
-// Memperbarui laporan
+// ==================================================
+// MEMPERBARUI LAPORAN KEHILANGAN
+// ==================================================
+
 const updateReport = async (req, res, next) => {
     try {
         if (!validateReport(req.body)) {
             return res.status(400).json({
                 success: false,
-                message: "Lengkapi semua data wajib"
+                message: "Lengkapi semua data wajib dan gunakan tanggal yang valid"
             });
         }
 
@@ -113,10 +177,16 @@ const updateReport = async (req, res, next) => {
             });
         }
 
+        // Memperbarui rekomendasi sesuai data laporan
+        const matching = await runMatching(report);
+
         return res.status(200).json({
             success: true,
-            message: "Laporan berhasil diperbarui",
-            data: report
+            message: matching.success
+                ? "Laporan berhasil diperbarui"
+                : "Laporan diperbarui, tetapi pencocokan AI gagal",
+            data: report,
+            matching
         });
 
     } catch (error) {
@@ -124,7 +194,10 @@ const updateReport = async (req, res, next) => {
     }
 };
 
-// Menghapus laporan
+// ==================================================
+// MENGHAPUS LAPORAN
+// ==================================================
+
 const deleteReport = async (req, res, next) => {
     try {
         const report = await Report.remove(
@@ -148,6 +221,10 @@ const deleteReport = async (req, res, next) => {
         next(error);
     }
 };
+
+// ==================================================
+// EXPORT CONTROLLER
+// ==================================================
 
 module.exports = {
     createReport,

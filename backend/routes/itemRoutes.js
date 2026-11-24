@@ -18,39 +18,42 @@ const {
 
 const router = express.Router();
 
-// PUBLIC ROUTES
+// ========================================
+// SEMUA ENDPOINT WAJIB LOGIN
+// ========================================
 
-// Menampilkan seluruh barang temuan
+router.use(authMiddleware);
+
+// ========================================
+// USER DAN ADMIN
+// ========================================
+
+// Menampilkan katalog barang temuan
 router.get("/", getAllItems);
 
-// Pencarian barang temuan
+// Mencari barang temuan
 router.get("/search", getAllItems);
 
-// Detail barang temuan
+// Melihat detail barang temuan
 router.get("/:id", getItemDetail);
 
-// ADMIN ROUTES
+// Melaporkan barang temuan
+router.post("/", createItem);
 
-// Menambahkan barang temuan
-router.post(
-    "/",
-    authMiddleware,
-    adminOnly,
-    createItem
-);
+// ========================================
+// KHUSUS ADMIN
+// ========================================
 
 // Memperbarui barang temuan
 router.put(
     "/:id",
-    authMiddleware,
     adminOnly,
     updateItem
 );
 
-// Menghapus barang temuan
+// Mengarsipkan barang temuan
 router.delete(
     "/:id",
-    authMiddleware,
     adminOnly,
     deleteItem
 );

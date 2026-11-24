@@ -1,21 +1,84 @@
 const Item = require("../models/itemModel");
 
-// Validasi data barang
-const validateItem = (body) => {
-    const required = [
-        "item_name",
-        "category",
-        "location",
-        "storage_location",
-        "found_date",
-        "found_time"
-    ];
+const {
+    refreshAllMatching
+} = require("../services/matchingService");
 
-    return required.every(
-        (field) =>
+// Validasi barang temuan
+const validateItem = (body = {}) => {
+    const limits = {
+        item_name: 255,
+        category: 100,
+        location: 255,
+        storage_location: 255,
+        found_date: 10,
+        found_time: 8
+    };
+
+    const valid = Object.entries(limits).every(
+        ([field, max]) =>
             typeof body[field] === "string" &&
-            body[field].trim().length > 0
+            body[field].trim().length > 0 &&
+            body[field].trim().length <= max
     );
+
+    if (!valid) return false;
+
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(body.found_date)) {
+        return false;
+    }
+
+    const date = new Date(
+        body.found_date + "T00:00:00Z"
+    );
+
+    if (
+        !Number.isFinite(date.getTime()) ||
+        date.toISOString().slice(0, 10) !== body.found_date
+    ) {
+        return false;
+    }
+
+    if (
+        !/^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/
+            .test(body.found_time)
+    ) {
+        return false;
+    }
+
+    const optional = {
+        color: 100,
+        brand: 100,
+        description: 2000
+    };
+
+    return Object.entries(optional).every(
+        ([field, max]) =>
+            body[field] == null ||
+            (
+                typeof body[field] === "string" &&
+                body[field].length <= max
+            )
+    );
+};
+
+// Menjalankan pencocokan ulang AI
+const runMatching = async () => {
+    try {
+        return await refreshAllMatching();
+
+    } catch (error) {
+        console.error(
+            "[ITEM AI ERROR]",
+            error.message
+        );
+
+        return {
+            success: false,
+            status: "failed",
+            message: "Data barang tersimpan, tetapi AI gagal diperbarui"
+        };
+    }
 };
 
 // Menambahkan barang temuan
@@ -24,7 +87,7 @@ const createItem = async (req, res, next) => {
         if (!validateItem(req.body || {})) {
             return res.status(400).json({
                 success: false,
-                message: "Lengkapi semua data wajib"
+                message: "Data barang tidak lengkap atau tidak valid"
             });
         }
 
@@ -33,17 +96,21 @@ const createItem = async (req, res, next) => {
             created_by: req.user.id
         });
 
+        const matching = await runMatching();
+
         return res.status(201).json({
             success: true,
             message: "Barang temuan berhasil ditambahkan",
-            data: item
+            data: item,
+            matching
         });
+
     } catch (error) {
         next(error);
     }
 };
 
-// Menampilkan semua barang temuan
+// Menampilkan katalog barang
 const getAllItems = async (req, res, next) => {
     try {
         const items = await Item.findAll(req.query);
@@ -54,6 +121,7 @@ const getAllItems = async (req, res, next) => {
             count: items.length,
             data: items
         });
+
     } catch (error) {
         next(error);
     }
@@ -78,6 +146,7 @@ const getItemDetail = async (req, res, next) => {
             message: "Detail barang berhasil diambil",
             data: item
         });
+
     } catch (error) {
         next(error);
     }
@@ -89,7 +158,7 @@ const updateItem = async (req, res, next) => {
         if (!validateItem(req.body || {})) {
             return res.status(400).json({
                 success: false,
-                message: "Lengkapi semua data wajib"
+                message: "Data barang tidak lengkap atau tidak valid"
             });
         }
 
@@ -105,17 +174,21 @@ const updateItem = async (req, res, next) => {
             });
         }
 
+        const matching = await runMatching();
+
         return res.status(200).json({
             success: true,
             message: "Barang berhasil diperbarui",
-            data: item
+            data: item,
+            matching
         });
+
     } catch (error) {
         next(error);
     }
 };
 
-// Menghapus barang dari katalog
+// Mengarsipkan barang
 const deleteItem = async (req, res, next) => {
     try {
         const item = await Item.remove(
@@ -129,10 +202,14 @@ const deleteItem = async (req, res, next) => {
             });
         }
 
+        const matching = await runMatching();
+
         return res.status(200).json({
             success: true,
-            message: "Barang berhasil diarsipkan"
+            message: "Barang berhasil diarsipkan",
+            matching
         });
+
     } catch (error) {
         next(error);
     }
