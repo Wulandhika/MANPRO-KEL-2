@@ -2,134 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import "./CariBarang.css";
 
-const DEMO = [
-  {
-    id: "cari-demo-1",
-    nama: "Dompet Kulit Cokelat Lipat",
-    kategori: "Dompet",
-    warna: "Cokelat",
-    merek: "Eiger",
-    tempat: "Pos Satpam Rektorat",
-    lokasi: "Selasar Rektorat UMY",
-    waktu: "2026-11-12T10:15",
-    ciri: "Dompet kulit lipat warna cokelat",
-    gambar: "https://lh3.googleusercontent.com/aida-public/AB6AXuB-3VS08ekhaDdxGrVuAukpNbd8_uzpskhpRxj55p-mc3JLU2lszydl_FcVd_LGpIk-1YJIylwRYLiGoLNCATaep8zUCUBYPQeEmn6qsDklgttBw1tHWrEYtKGm41te51JfRWaPpSuNcjO8nR3bXpeOBNoUjmdE7bYdTgqjCrNCg5JsgfxwsCDyvVE0mbsLI-aYtyMA0F-lOXcHpuIzbK-lwtEkcGp-O7CqolEtIde8",
-    status: "Ditemukan",
-    contoh: true,
-  },
-  {
-    id: "cari-demo-2",
-    nama: "Tumbler Stainless Biru Steel",
-    kategori: "Botol Minum",
-    warna: "Biru",
-    merek: "",
-    tempat: "Pos Perpustakaan",
-    lokasi: "Perpustakaan UMY Lt. 2",
-    waktu: "2026-11-12T09:30",
-    ciri: "Tumbler stainless biru steel",
-    gambar: "https://lh3.googleusercontent.com/aida-public/AB6AXuC9ETyQcpYc_jCv3Cvl8mbKN1PoXVaosrpvbg11DXIwbFwJcvpm8JSNguEnsjosrAYmsdGd1NcCqGxexw9HZZJE1ro2HMYRMk8PCqvjmr8kkaXSR8AXRuf1SIpfBm8bIQqfX-vhmpWRHgfB-CCM2YecXINqGbqUsbSxDPsbDyC1WyJ4ocNTa-ZRq9rqnTwArZBo8lTxNNOUtqXrBL9EVyzP--D1V1D5P6Yll3QyLG6d",
-    status: "Ditemukan",
-    contoh: true,
-  },
-  {
-    id: "cari-demo-3",
-    nama: "Kunci Motor Tali Merah",
-    kategori: "Kunci",
-    warna: "Merah",
-    merek: "",
-    tempat: "Pos Satpam Utama",
-    lokasi: "Parkir Gerbang Utama UMY",
-    waktu: "2026-11-11T16:45",
-    ciri: "Kunci motor dengan tali merah",
-    gambar: "https://lh3.googleusercontent.com/aida-public/AB6AXuARsGjgXzdNGjPBc3tx61528UNJNFkq5HVDbQCl5jql7QMzPiYzf8x6sxdAhKJiFFgylQKgLRlY0O_tnxe19IVWJLwjVEesvFta61r2pltQVxhjZY9SUd07mJzJO5TGE30ChjuNENIkJn2DsHJtSwfnG5TV3ygPbXtfdizHaBYz9tkwmze4skF4dWxA5ljM95FTcSMwjbNARkfTRFOd4aSb9ClXHstQ2h5jqJ_anckG",
-    status: "Ditemukan",
-    contoh: true,
-  },
-  {
-    id: "cari-demo-4",
-    nama: "Jaket Parasut Hitam Polos",
-    kategori: "Pakaian",
-    warna: "Hitam",
-    merek: "",
-    tempat: "Pos Pengamanan Masjid",
-    lokasi: "Masjid KH Ahmad Dahlan",
-    waktu: "2026-11-11T13:10",
-    ciri: "Jaket parasut hitam polos",
-    gambar: "https://lh3.googleusercontent.com/aida-public/AB6AXuBqeq03MkrwWPmOWN4wAn92Fig3CeQjOXNLXAfLyh9OnumR9QW4YB2R6dpoWy4GlqQlQuPJIKuz94pzlXINGdnd2od4HZsULk-2VD47tuvy1vbByhhiT3ZnJZqz_uHxV85Lz04gUfPPIrk7uE-_SPmvBQUJNo9xEosczCD4gTLO0cr2ZTh_Z8cj5VLGBxyzVwdeM9k6ZeFhYKJ-WfqqTPnHr5y3pnUzRxs7pAhpc3n",
-    status: "Ditemukan",
-    contoh: true,
-  },
-  {
-    id: "cari-demo-5",
-    nama: "Case Wireless Earbuds Putih",
-    kategori: "Aksesori",
-    warna: "Putih",
-    merek: "",
-    tempat: "Pos Kantin Pusat",
-    lokasi: "Kantin Pusat (AR Fachruddin)",
-    waktu: "2026-11-11T12:00",
-    ciri: "Case wireless earbuds putih",
-    gambar: "https://lh3.googleusercontent.com/aida-public/AB6AXuC9IvYwWQlzB_DAzr8H6m-8pGqfvvKuCdFUqM1np74xBZul_L4v-0dMI7OYX8bjxN3K_adMIs4bMcMYUyt2Tklg1EQ8EalAp38vwb6On-yk5pcCs3aKsnNrZnL5gedO6SlYYlo13BIZWwZIVlz9Sqllgdybh9PJGwlJF-a9MUNhapIY2pLQVgurHktz9t1qkzg2u41_64BxE56jpqPGOK_3a80jt8xIkl2DkX_F_4wJ",
-    status: "Ditemukan",
-    contoh: true,
-  },
-  {
-    id: "cari-demo-6",
-    nama: "Tas Ransel Laptop Abu-abu",
-    kategori: "Tas",
-    warna: "Abu-abu",
-    merek: "",
-    tempat: "Pos Sportorium",
-    lokasi: "Sportorium UMY",
-    waktu: "2026-11-10T17:20",
-    ciri: "Tas ransel laptop abu-abu",
-    gambar: "https://lh3.googleusercontent.com/aida-public/AB6AXuAZxQoHjnCWrM21Q8Fi8OGeHT3ldjmNp2XN3gODOsVkE0C1k719SM7nv2Pm9G-d5W76fiX5-62XoBWAH2LTlazDspt7RwupAt93We2XWFWNeQFnWWMkeIEDbMe1aBZqUEGQ9xvFYp8vclSHAUdzO-0S9wQonF6reC3obKb-FynWYvLcW4FJb62H4-ZtebIZ7f1g85kAzGCWdPuTd1CS5CkFJ_5xOiP7nh8epXsXDmso",
-    status: "Ditemukan",
-    contoh: true,
-  },
-  {
-    id: "cari-demo-7",
-    nama: "Kacamata Minus Frame Hitam",
-    kategori: "Aksesori",
-    warna: "Hitam",
-    merek: "",
-    tempat: "Pos Gedung E6",
-    lokasi: "Gedung KH Ibrahim (E6)",
-    waktu: "2026-11-10T11:40",
-    ciri: "Kacamata minus frame hitam",
-    gambar: "https://lh3.googleusercontent.com/aida-public/AB6AXuBlo9SwVhR-e4e6g7q3S1-UlJDmmpHpKR0txzyJC7JNayd5T3vryoxECUJg35c_lHYqMAAysSsmMZH8md7hkjTn2tZFg-BuvEB9HfUS9jafourcv1TQ11nKmOuUH3IFzFTHUCifY_7IoEesTcjIuH-wigMpIab7K1hXnO_tDmHu1YzKyvf5pGE4iio4QPisJnqTO9crM0MFBsd_PQg2CbWPqrJBQ1XJG7sN9H6OJAWr",
-    status: "Ditemukan",
-    contoh: true,
-  },
-  {
-    id: "cari-demo-8",
-    nama: "Payung Lipat Biru Navy",
-    kategori: "Lainnya",
-    warna: "Biru Navy",
-    merek: "",
-    tempat: "Pos Gedung Siti Walidah",
-    lokasi: "Gedung Siti Walidah Lt. 1",
-    waktu: "2026-11-09T15:50",
-    ciri: "Payung lipat warna navy",
-    gambar: "https://lh3.googleusercontent.com/aida-public/AB6AXuBscoPZbrUJ9a5-iT4uTctgpJH5XME7FsxQC35awYlqRSIk8BmA9AEqwGAYztRUsQblciHcloNO9AyWD6SLAIPPWLoIo1sS3DzAJXnuDIT_704bXQlv2zJVKoMWNBVLsB6cmw1IAkOtWZpw65pPhKgradQ1niWUQKdWdhLOtzRtbGZvq6w7nu9Rd1WX5Gxuga7ZbOKh8_mucJKPmFnqic9wWq6D4lL08tH9m-jsr4nV",
-    status: "Ditemukan",
-    contoh: true,
-  },
-  {
-    id: "cari-demo-9",
-    nama: "Helm Half-Face Putih Polos",
-    kategori: "Aksesori",
-    warna: "Putih",
-    merek: "",
-    tempat: "Pos Satpam Utama",
-    lokasi: "Parkir Gerbang Utama UMY",
-    waktu: "2026-11-09T08:15",
-    ciri: "Helm half-face putih polos",
-    gambar: "https://lh3.googleusercontent.com/aida-public/AB6AXuDCppao7xS2Amo_u7kDQ-Ss9E8Ek5f0Yz6hNL2yq_fZ7NGFWtFKyfEC6Jk7x1VTBJko6UQ-xnMlE5PPpVr3B-lF5lcR3qn3InjS5XdoQN3afEOXWNvSiDYD2swmnxEzgcQu9zvET3cajl8tr8QH78b5mnA54PxCYV_KmBLXKBi-eOVq1WmFHbWHAYfeRsCfsjbS-jgpKmV3ZLbv2OeYm8qa2sz55BRJdVM-oMkPia1b",
-    status: "Ditemukan",
-    contoh: true,
-  },
-];
+
 
 const JENIS = [
   "Dompet",
@@ -230,6 +103,8 @@ function Icon({ name }) {
 
 export default function CariBarang({
   items = [],
+  loading = false,
+  error = "",
   keyword = "",
   user = null,
   onNavigate = () => {},
@@ -276,7 +151,7 @@ export default function CariBarang({
         contoh: false,
       }));
 
-    return [...DEMO, ...baru];
+    return baru;
   }, [items]);
 
   const hasil = useMemo(() => {
@@ -705,7 +580,7 @@ export default function CariBarang({
                 Menampilkan <strong>{tampil.length}</strong>
                 {" "}dari <strong>{hasil.length}</strong>
                 {" "}barang temuan
-                <small>(data demo)</small>
+                <small>(data server)</small>
               </span>
 
               <label>
@@ -723,7 +598,24 @@ export default function CariBarang({
               </label>
             </div>
 
-            {tampil.length ? (
+                        {!user ? (
+              <div className="cb-empty">
+                <Icon name="lock" />
+                <h3>Silakan masuk terlebih dahulu</h3>
+                <p>Login untuk melihat katalog barang kampus.</p>
+                <button className="cb-button" onClick={() => pindah("masuk")}>
+                  Masuk
+                </button>
+              </div>
+            ) : loading ? (
+              <div className="cb-empty" role="status">
+                Memuat barang dari database...
+              </div>
+            ) : error ? (
+              <div className="cb-empty" role="alert">
+                {error}
+              </div>
+            ) : tampil.length ? (
               <div className="cb-grid">
                 {tampil.map((item) => (
                   <article

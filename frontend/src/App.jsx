@@ -1,4 +1,4 @@
-﻿import AdminDashboard from "./AdminDashboard.jsx";
+import AdminDashboard from "./AdminDashboard.jsx";
 
 import { useEffect, useState } from "react";
 
@@ -1509,13 +1509,7 @@ export default function App() {
   // DATA BARANG
   // ======================================
 
-  const [barang, setBarang] = useState(() =>
-    baca(
-      "findit_barang_final_v1",
-      DATA_AWAL,
-      localStorage
-    )
-  );
+  const [barang, setBarang] = useState([]);
 
   // ======================================
   // DATA KLAIM
@@ -1535,7 +1529,7 @@ export default function App() {
 
   const [pengguna, setPengguna] = useState(() =>
     baca(
-      "findit_user_final_v1",
+      "findit_user_api_v2",
       null,
       sessionStorage
     )
@@ -1551,6 +1545,251 @@ export default function App() {
       "beranda"
   );
 
+  const [cekSesi, setCekSesi] = useState(
+    Boolean(pengguna)
+  );
+
+  useEffect(() => {
+    let aktif = true;
+    const controller = new AbortController();
+
+    async function validasiSesi() {
+      try {
+        sessionStorage.removeItem("findit_user_final_v1");
+      } catch {
+        // Penyimpanan browser bersifat opsional.
+      }
+
+      if (!pengguna?.token) {
+        if (aktif) {
+          setPengguna(null);
+          setCekSesi(false);
+        }
+        return;
+      }
+
+      try {
+        const baseUrl = (
+          import.meta.env.VITE_API_URL ||
+          "http://localhost:5000/api"
+        ).replace(/\/$/, "");
+
+        const response = await fetch(
+          `${baseUrl}/auth/me`,
+          {
+            headers: {
+              Authorization: `Bearer ${pengguna.token}`,
+            },
+            signal: controller.signal,
+          }
+        );
+
+        const result = await response.json();
+
+        if (
+          !response.ok ||
+          !result.success ||
+          !result.data ||
+          !["admin", "user"].includes(result.data.role)
+        ) {
+          throw new Error("Sesi tidak valid.");
+        }
+
+        if (aktif) {
+          setPengguna({
+            ...result.data,
+            nama: result.data.name,
+            nomorInduk: result.data.nim_nip,
+            token: pengguna.token,
+          });
+        }
+
+      } catch (error) {
+        if (aktif) {
+          setPengguna(null);
+
+          try {
+            sessionStorage.removeItem(
+              "findit_user_api_v2"
+            );
+          } catch {
+            // Abaikan kegagalan penyimpanan.
+          }
+        }
+      } finally {
+        if (aktif) {
+          setCekSesi(false);
+        }
+      }
+    }
+
+    validasiSesi();
+
+    return () => {
+      aktif = false;
+      controller.abort();
+    };
+  }, []);
+
+
+  const [dataPenggunaApi, setDataPenggunaApi] = useState({
+    token: null,
+    items: [],
+    error: "",
+    loading: false,
+  });
+
+  const tokenAktif = pengguna?.token;
+
+  useEffect(() => {
+    if (!tokenAktif || cekSesi) return;
+
+    let aktif = true;
+    const controller = new AbortController();
+
+    const base = (
+      import.meta.env.VITE_API_URL ||
+      "http://localhost:5000/api"
+    ).replace(/\/$/, "");
+
+    async function ambil(path) {
+      const response = await fetch(`${base}${path}`, {
+        headers: {
+          Authorization: `Bearer ${tokenAktif}`,
+        },
+        signal: controller.signal,
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "Gagal mengambil data.");
+      }
+
+      if (!Array.isArray(result.data)) {
+        throw new Error("Format data API tidak sesuai.");
+      }
+
+      return result.data;
+    }
+
+    async function muatData() {
+      setDataPenggunaApi({
+        token: tokenAktif,
+        items: [],
+        error: "",
+        loading: true,
+      });
+
+      try {
+        const temuan = [];
+
+        for (let page = 1; page <= 100; page++) {
+          const rows = await ambil(
+            `/items?limit=100&page=${page}`
+          );
+
+          temuan.push(...rows);
+
+          if (rows.length < 100) break;
+        }
+
+        const laporan = await ambil("/reports/my");
+
+        const gambarKosong =
+          "data:image/svg+xml;charset=UTF-8," +
+          encodeURIComponent(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400"><rect width="100%" height="100%" fill="#e8edf5"/><text x="50%" y="50%" text-anchor="middle" fill="#64748b" font-family="Arial" font-size="24">Foto belum tersedia</text></svg>'
+          );
+
+        const dataBarang = temuan.map((item) => ({
+          id: `item-${item.id}`,
+          apiId: item.id,
+          tipe: "DITEMUKAN",
+          nama: item.item_name,
+          kategori: item.category || "Lainnya",
+          warna: item.color || "",
+          merek: item.brand || "",
+          lokasi: item.location || "",
+          tempat: item.storage_location || "",
+          waktu:
+            String(item.found_date || "").slice(0, 10) +
+            "T" +
+            String(item.found_time || "00:00:00"),
+          ciri: item.description || "",
+          gambar: gambarKosong,
+          status: item.status === "claimed" ? "Dikembalikan" : "Ditemukan",
+          pelapor: "",
+        }));
+
+        const dataLaporan = laporan.map((item) => ({
+          id: `report-${item.id}`,
+          apiId: item.id,
+          tipe: "HILANG",
+          nama: item.item_name,
+          kategori: item.category || "Lainnya",
+          warna: item.color || "",
+          merek: item.brand || "",
+          lokasi: item.location || "",
+          waktu: String(item.lost_date || "").slice(0, 10),
+          ciri: item.description || "",
+          gambar: gambarKosong,
+          pelapor: pengguna.email,
+          status:
+            ["resolved", "returned", "completed"].includes(item.status)
+              ? "Dikembalikan"
+              : item.status === "matched"
+                ? "Ada Rekomendasi"
+                : "Hilang",
+        }));
+
+        if (aktif) {
+          setDataPenggunaApi({
+            token: tokenAktif,
+            items: [...dataBarang, ...dataLaporan],
+            error: "",
+            loading: false,
+          });
+        }
+
+      } catch (error) {
+        if (aktif) {
+          setDataPenggunaApi({
+            token: tokenAktif,
+            items: [],
+            error: error.message || "Backend tidak dapat dihubungi.",
+            loading: false,
+          });
+        }
+      }
+    }
+
+    muatData();
+
+    return () => {
+      aktif = false;
+      controller.abort();
+    };
+
+  }, [tokenAktif, cekSesi, rute]);
+
+  const barangApi =
+    tokenAktif && dataPenggunaApi.token === tokenAktif
+      ? dataPenggunaApi.items
+      : [];
+
+  const dataApiLoading =
+    Boolean(tokenAktif) &&
+    (
+      dataPenggunaApi.token !== tokenAktif ||
+      dataPenggunaApi.loading
+    );
+
+  const dataApiError =
+    dataPenggunaApi.token === tokenAktif
+      ? dataPenggunaApi.error
+      : "";
+
   const [kataCari, setKataCari] = useState("");
   const [menuBuka, setMenuBuka] = useState(false);
 
@@ -1558,16 +1797,7 @@ export default function App() {
   // PENYIMPANAN DATA
   // ======================================
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(
-        "findit_barang_final_v1",
-        JSON.stringify(barang)
-      );
-    } catch {
-      console.warn("Penyimpanan laporan penuh.");
-    }
-  }, [barang]);
+
 
   useEffect(() => {
     try {
@@ -1584,12 +1814,12 @@ export default function App() {
     try {
       if (pengguna) {
         sessionStorage.setItem(
-          "findit_user_final_v1",
+          "findit_user_api_v2",
           JSON.stringify(pengguna)
         );
       } else {
         sessionStorage.removeItem(
-          "findit_user_final_v1"
+          "findit_user_api_v2"
         );
       }
     } catch {
@@ -1667,33 +1897,69 @@ export default function App() {
   }
 
   // ======================================
-  // LOGIN DEMO
+  // LOGIN BACKEND
   // ======================================
 
-  function masuk(email, password) {
-    const e = bersih(email);
+  async function requestAuth(endpoint, body) {
+    const baseUrl = (
+      import.meta.env.VITE_API_URL ||
+      "http://localhost:5000/api"
+    ).replace(/\/$/, "");
 
-    const admin =
-      e === "admin@findit.test" &&
-      password === "admin123";
+    let response;
 
-    const user =
-      e === "demo@findit.test" &&
-      password === "demo123";
+    try {
+      response = await fetch(`${baseUrl}/auth/${endpoint}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
+    } catch {
+      throw new Error(
+        "Backend tidak dapat dihubungi. Pastikan server port 5000 berjalan."
+      );
+    }
 
-    if (!admin && !user) {
-      alert("Email atau password akun demo salah.");
-      return;
+    const result = await response.json().catch(() => null);
+
+    if (!response.ok || !result?.success) {
+      throw new Error(
+        result?.message || "Permintaan gagal. Silakan coba kembali."
+      );
+    }
+
+    return result.data;
+  }
+
+  async function masuk(email, password) {
+    const data = await requestAuth("login", {
+      email: email.trim().toLowerCase(),
+      password,
+    });
+
+    const user = data?.user;
+
+    if (
+      !data?.token ||
+      !user ||
+      !["admin", "user"].includes(user.role)
+    ) {
+      throw new Error("Respons autentikasi tidak valid.");
     }
 
     setPengguna({
-      email: e,
-      nama: admin ? "Admin FindIt" : "Pengguna Demo",
-      role: admin ? "admin" : "user",
+      ...user,
+      nama: user.name,
+      nomorInduk: user.nim_nip,
+      token: data.token,
     });
 
     pergi(
-      admin ? "admin" : "beranda-pengguna"
+      user.role === "admin"
+        ? "admin"
+        : "beranda-pengguna"
     );
   }
 
@@ -1701,20 +1967,22 @@ export default function App() {
   // REGISTRASI
   // ======================================
 
-  function registrasi(nama, email, nomorInduk) {
-    if (!nama || !email) {
-      alert("Nama dan email wajib diisi.");
-      return;
-    }
-
-    setPengguna({
-      nama,
-      email: bersih(email),
-      nomorInduk,
-      role: "user",
+  async function registrasi(
+    nama,
+    email,
+    nomorInduk,
+    password,
+    confirmPassword
+  ) {
+    await requestAuth("register", {
+      name: nama.trim(),
+      email: email.trim().toLowerCase(),
+      nim_nip: nomorInduk.trim(),
+      password,
+      confirmPassword,
     });
 
-    pergi("beranda-pengguna");
+    return true;
   }
 
   // ======================================
@@ -1726,7 +1994,7 @@ export default function App() {
 
     try {
       sessionStorage.removeItem(
-        "findit_user_final_v1"
+        "findit_user_api_v2"
       );
     } catch {
       console.warn("Gagal menghapus sesi.");
@@ -1743,6 +2011,10 @@ export default function App() {
   // ======================================
 
   function kirimKlaim(barangId, bukti) {
+    if (String(barangId).startsWith("item-")) {
+      alert("Integrasi pengajuan klaim sedang diselesaikan.");
+      return;
+    }
     const target = barang.find(
       (b) => b.id === barangId
     );
@@ -1884,8 +2156,7 @@ export default function App() {
         : data;
 
     const item =
-      barang.find(
-        (b) => b.id === String(rawId)
+      [...barangApi, ...barang].find((b) => b.id === String(rawId)
       ) ||
       barang.find(
         (b) => b.id === `demo-${rawId}`
@@ -1990,14 +2261,59 @@ export default function App() {
 
   const [ruteHalaman, id] = rute.split("/");
 
-  const halaman =
+  const halamanDiminta =
     ruteHalaman === "dashboard"
       ? "beranda-pengguna"
       : ruteHalaman === "cari-barang"
         ? "cari"
         : ruteHalaman;
 
-  const detail = barang.find(
+  const halamanKhususAdmin = [
+    "admin",
+    "admin-dashboard",
+    "data-barang",
+    "data-pengguna",
+    "input-barang-temuan",
+    "verifikasi-laporan",
+  ];
+
+  const halamanWajibLogin = [
+    "beranda-pengguna",
+    "lapor-hilang",
+    "lapor-ditemukan",
+    "proses-analisis",
+    "rekomendasi",
+    "klaim",
+    "laporan-saya",
+    "profil-saya",
+    ...halamanKhususAdmin,
+  ];
+
+  let tujuanAman = halamanDiminta;
+
+  if (
+    !pengguna &&
+    halamanWajibLogin.includes(halamanDiminta)
+  ) {
+    tujuanAman = "masuk";
+  } else if (
+    halamanKhususAdmin.includes(halamanDiminta) &&
+    pengguna?.role !== "admin"
+  ) {
+    tujuanAman = "beranda-pengguna";
+  }
+
+  const halaman = tujuanAman;
+
+  useEffect(() => {
+    if (!cekSesi && tujuanAman !== halamanDiminta) {
+      window.location.hash = tujuanAman;
+      setRute(tujuanAman);
+    }
+  }, [cekSesi, tujuanAman, halamanDiminta]);
+
+
+  const detail = [...barangApi, ...barang].find(
     (b) => b.id === id
   );
 
@@ -2027,6 +2343,24 @@ export default function App() {
     "privasi",
   ];
 
+  if (cekSesi || (dataApiLoading && halaman === "detail")) {
+    return (
+      <div
+        className="container page"
+        style={{
+          minHeight: "70vh",
+          display: "grid",
+          placeItems: "center",
+        }}
+      >
+        <p role="status">
+          Memeriksa sesi pengguna...
+        </p>
+      </div>
+    );
+  }
+
+
   // ======================================
   // HALAMAN CARI BARANG
   // ======================================
@@ -2034,7 +2368,9 @@ export default function App() {
   if (halaman === "cari") {
     return (
       <CariBarang
-        items={barang}
+        items={barangApi}
+        loading={dataApiLoading}
+        error={dataApiError}
         keyword={kataCari}
         user={pengguna}
         onNavigate={navigasiPengguna}
@@ -2088,7 +2424,9 @@ export default function App() {
       <UserHome
         userName={pengguna.nama || "Mahasiswa"}
         userEmail={pengguna.email}
-        items={barang}
+        items={barangApi}
+        loading={dataApiLoading}
+        error={dataApiError}
         onNavigate={navigasiPengguna}
         onLogout={keluar}
       />
@@ -2298,7 +2636,7 @@ export default function App() {
 
         {halaman === "beranda" && (
           <Beranda
-            barang={barang}
+            barang={barangApi}
             pergi={pergi}
             cari={cari}
           />

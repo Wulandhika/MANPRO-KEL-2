@@ -73,6 +73,7 @@ export default function AuthPage({
 }) {
   const [tab, setTab] = useState(daftar ? "daftar" : "masuk");
   const [pesan, setPesan] = useState("");
+  const [loading, setLoading] = useState(false);
   const [fotoAda, setFotoAda] = useState(true);
 
   const [lihatLogin, setLihatLogin] = useState(false);
@@ -99,6 +100,7 @@ export default function AuthPage({
   }, [daftar]);
 
   function gantiTab(tujuan) {
+    if (loading) return;
     setTab(tujuan);
     setPesan("");
     pergi(tujuan === "daftar" ? "daftar" : "masuk");
@@ -111,43 +113,145 @@ export default function AuthPage({
     }));
   }
 
-  function submit(e) {
+  async function submit(e) {
     e.preventDefault();
+
+    if (loading) return;
+
     setPesan("");
 
-    if (tab === "masuk") {
-      const email = login.email.trim().toLowerCase();
+    const emailValid = (email) =>
+      email.length <= 255 &&
+      /^[^\s@]+@(umy\.ac\.id|mail\.umy\.ac\.id)$/i.test(email);
 
-      try {
-        if (login.ingat) {
-          localStorage.setItem("findit_email_diingat", email);
-        } else {
-          localStorage.removeItem("findit_email_diingat");
-        }
-      } catch {
-        // Penyimpanan email bersifat opsional.
+    const email =
+      tab === "masuk"
+        ? login.email.trim().toLowerCase()
+        : formDaftar.email.trim().toLowerCase();
+
+    if (!emailValid(email)) {
+      setPesan(
+        "Gunakan email resmi UMY (@umy.ac.id atau @mail.umy.ac.id)."
+      );
+      return;
+    }
+
+    if (tab === "masuk") {
+      if (
+        !login.password ||
+        new TextEncoder().encode(login.password).length > 72
+      ) {
+        setPesan("Kata sandi tidak valid.");
+        return;
       }
 
-      masuk(email, login.password);
+      setLoading(true);
+
+      try {
+        await masuk(email, login.password);
+
+        try {
+          if (login.ingat) {
+            localStorage.setItem(
+              "findit_email_diingat",
+              email
+            );
+          } else {
+            localStorage.removeItem(
+              "findit_email_diingat"
+            );
+          }
+        } catch {
+          // Penyimpanan email bersifat opsional.
+        }
+      } catch (error) {
+        setPesan(error.message || "Login gagal.");
+      } finally {
+        setLoading(false);
+      }
+
       return;
     }
 
     const nama = formDaftar.nama.trim();
     const nim = formDaftar.nim.trim();
-    const email = formDaftar.email.trim().toLowerCase();
+    const password = formDaftar.password;
+    const konfirmasi = formDaftar.konfirmasi;
 
-    if (formDaftar.password.length < 8) {
-      setPesan("Kata sandi harus memiliki minimal 8 karakter.");
+    if (
+      nama.length < 3 ||
+      nama.length > 100 ||
+      !/^[\p{L}\p{M}]+(?:[ .'\u2019-][\p{L}\p{M}]+)*\.?$/u.test(nama)
+    ) {
+      setPesan(
+        "Nama harus 3-100 karakter dan tidak boleh mengandung angka atau simbol sembarangan."
+      );
       return;
     }
 
-    if (formDaftar.password !== formDaftar.konfirmasi) {
+    if (!/^\d{1,30}$/.test(nim)) {
+      setPesan("NIM/NIP wajib berupa angka, maksimal 30 digit.");
+      return;
+    }
+
+    if (email === "admin123@umy.ac.id") {
+      setPesan(
+        "Akun admin tidak dapat didaftarkan melalui registrasi umum."
+      );
+      return;
+    }
+
+    if (
+      password.length < 8 ||
+      new TextEncoder().encode(password).length > 72 ||
+      !password.trim()
+    ) {
+      setPesan(
+        "Kata sandi minimal 8 karakter dan maksimal 72 byte."
+      );
+      return;
+    }
+
+    if (password !== konfirmasi) {
       setPesan("Konfirmasi kata sandi belum sama.");
       return;
     }
 
-    // Registrasi simulasi; password tidak disimpan.
-    registrasi(nama, email, nim);
+    setLoading(true);
+
+    try {
+      await registrasi(
+        nama,
+        email,
+        nim,
+        password,
+        konfirmasi
+      );
+
+      setFormDaftar({
+        nama: "",
+        nim: "",
+        email: "",
+        password: "",
+        konfirmasi: "",
+      });
+
+      setLogin((prev) => ({
+        ...prev,
+        email,
+        password: "",
+      }));
+
+      window.alert(
+        "Pendaftaran berhasil! Silakan masuk menggunakan akun Anda."
+      );
+
+      gantiTab("masuk");
+    } catch (error) {
+      setPesan(error.message || "Pendaftaran gagal.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -242,7 +346,7 @@ export default function AuthPage({
                 <form className="auth-form" onSubmit={submit}>
                   <div className="auth-field">
                     <label htmlFor="auth-login-email">
-                      Email Kampus / Pribadi
+                      Email Resmi UMY
                     </label>
 
                     <input
@@ -255,7 +359,7 @@ export default function AuthPage({
                           email: e.target.value,
                         }))
                       }
-                      placeholder="nama@kampus.ac.id"
+                      placeholder="nama@mail.umy.ac.id"
                       autoComplete="email"
                       required
                     />
@@ -293,7 +397,7 @@ export default function AuthPage({
                       type="button"
                       onClick={() =>
                         setPesan(
-                          "Reset kata sandi belum tersedia pada mode demo. Gunakan akun demo untuk mencoba halaman ini."
+                          "Reset kata sandi belum tersedia. Silakan hubungi administrator FindIt."
                         )
                       }
                     >
@@ -307,8 +411,7 @@ export default function AuthPage({
                     </p>
                   )}
 
-                  <button className="auth-submit" type="submit">
-                    Masuk
+                  <button className="auth-submit" type="submit" disabled={loading}>{loading ? "Memproses..." : "Masuk"}
                   </button>
                 </form>
 
@@ -368,7 +471,7 @@ export default function AuthPage({
 
                   <div className="auth-field">
                     <label htmlFor="auth-reg-email">
-                      Email (Kampus / Pribadi)
+                      Email Resmi UMY
                     </label>
 
                     <input
@@ -378,7 +481,7 @@ export default function AuthPage({
                       onChange={(e) =>
                         ubahDaftar("email", e.target.value)
                       }
-                      placeholder="nama@kampus.ac.id"
+                      placeholder="nama@mail.umy.ac.id"
                       autoComplete="email"
                       required
                     />
@@ -416,8 +519,7 @@ export default function AuthPage({
                     </p>
                   )}
 
-                  <button className="auth-submit" type="submit">
-                    Daftar
+                  <button className="auth-submit" type="submit" disabled={loading}>{loading ? "Memproses..." : "Daftar"}
                   </button>
                 </form>
 
@@ -433,22 +535,7 @@ export default function AuthPage({
               </>
             )}
 
-            <details className="auth-demo">
-              <summary>Lihat akun demo untuk pengujian</summary>
-              <p>
-                Pengguna: <strong>demo@findit.test</strong> /
-                demo123
-              </p>
-              <p>
-                Admin: <strong>admin@findit.test</strong> /
-                admin123
-              </p>
-              <small>
-                Pendaftaran masih simulasi; kata sandi tidak
-                disimpan. Centang "Ingat saya" untuk menyimpan
-                email saja.
-              </small>
-            </details>
+            
           </div>
         </div>
       </div>

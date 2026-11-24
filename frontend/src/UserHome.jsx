@@ -1,12 +1,7 @@
 import { useMemo, useState } from "react";
 import "./UserHome.css";
 
-const reportExamples = [
-  { id: "contoh-1", nama: "Dompet Kulit Cokelat Eiger", lokasi: "Kantin AR Fachruddin", waktu: "2026-11-15", status: "Ada Rekomendasi", ikon: "wallet", catatan: "Tersedia temuan yang mirip di pos penampungan" },
-  { id: "contoh-2", nama: "Kunci Motor Vario Gantungan Merah", lokasi: "Parkir Siti Walidah", waktu: "2026-11-14", status: "Dalam Verifikasi", ikon: "key", catatan: "Sedang dicocokkan oleh petugas kampus" },
-  { id: "contoh-3", nama: "Tumbler Hydro Flask Biru", lokasi: "Perpustakaan UMY Lt. 2", waktu: "2026-11-10", status: "Dikembalikan", ikon: "water_bottle", catatan: "Telah diambil di Pos Satpam Utama" },
-  { id: "contoh-4", nama: "Jaket Parka Hitam Uniqlo", lokasi: "Selasar AR Fachruddin B", waktu: "2026-11-08", status: "Hilang", ikon: "apparel", catatan: "Belum ada temuan yang cocok" },
-];
+
 
 const quickTerms = ["Tumbler", "KTM", "Kunci Motor", "Jaket", "Earbuds"];
 
@@ -36,6 +31,8 @@ export default function UserHome({
   userName = "Mahasiswa",
   userEmail = "",
   items = [],
+  loading = false,
+  error = "",
   onNavigate = () => {},
   onLogout = () => {},
 }) {
@@ -46,10 +43,10 @@ export default function UserHome({
 
   const reports = useMemo(() => {
     const own = items.filter((item) => item.pelapor === userEmail);
-    return own.length > 0 ? own.slice(0, 4) : reportExamples;
+    return own.slice(0, 4);
   }, [items, userEmail]);
 
-  const isExample = !items.some((item) => item.pelapor === userEmail);
+  const isExample = false;
 
   const foundItems = useMemo(() => {
     const term = activeSearch.trim().toLowerCase();
@@ -72,7 +69,7 @@ export default function UserHome({
       setExampleModal(item);
       return;
     }
-    onNavigate("rekomendasi", { id: item.id });
+    onNavigate("detail", { id: item.id });
   }
 
   return (
@@ -99,7 +96,7 @@ export default function UserHome({
             </button>
             {menuOpen && <div className="uh-profile-menu">
               <strong>{userName}</strong>
-              <small>{userEmail || "Akun demo"}</small>
+              <small>{userEmail || "Akun pengguna"}</small>
               <button onClick={() => onNavigate("profil-saya")}><Icon name="account_circle" /> Profil Saya</button>
               <button onClick={onLogout}><Icon name="logout" /> Keluar</button>
             </div>}
@@ -126,7 +123,17 @@ export default function UserHome({
 
         <section className="uh-section" id="uh-laporan">
           <div className="uh-section-heading"><div><h2>Laporan Saya</h2><p>Pantau perkembangan pencarian barang milikmu secara berkala.</p></div><button className="uh-link" onClick={() => onNavigate("laporan-saya")}>Lihat Semua Laporan <Icon name="arrow_forward" /></button></div>
-          {isExample && <p className="uh-demo-note">Contoh tampilan laporan. Laporanmu akan tampil di sini setelah membuat laporan baru.</p>}
+          {isExample && <p className="uh-demo-note">Belum ada laporan.</p>}
+                    {loading && <p role="status">Memuat data...</p>}
+          {error && <p role="alert">{error}</p>}
+          {!loading && !error && reports.length === 0 && (
+            <div className="uh-empty">
+              Kamu belum memiliki laporan kehilangan.
+              <button onClick={() => onNavigate("lapor-hilang")}>
+                Buat Laporan
+              </button>
+            </div>
+          )}
           <div className="uh-reports">
             {reports.map((item) => <article className="uh-report" key={item.id}>
               <div className="uh-report-top">
